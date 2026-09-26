@@ -11,17 +11,55 @@
     });
   });
 
-  // Destaca automaticamente a seção que está na tela.
-  if ("IntersectionObserver" in window) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        navLinks.forEach(link => {
-          link.classList.toggle("active", link.getAttribute("href") === "#" + entry.target.id);
-        });
-      });
-    }, { threshold: 0.55 });
+  // Destaca o menu conforme a seção que está sendo visualizada.
+  // Usamos a posição real das seções porque "Sobre mim" é uma seção longa
+  // e o IntersectionObserver com threshold alto poderia não ativá-la.
+  function updateActiveNav() {
+    const offset = (parseInt(getComputedStyle(document.documentElement)
+      .getPropertyValue("--header-height")) || 120) + 40;
 
-    sections.forEach(section => observer.observe(section));
+    let currentId = sections[0]?.id || "home";
+
+    sections.forEach(section => {
+      const top = section.getBoundingClientRect().top + window.scrollY;
+      if (window.scrollY + offset >= top) {
+        currentId = section.id;
+      }
+    });
+
+    navLinks.forEach(link => {
+      link.classList.toggle(
+        "active",
+        link.getAttribute("href") === "#" + currentId
+      );
+    });
   }
+
+  window.addEventListener("scroll", updateActiveNav, { passive: true });
+  window.addEventListener("resize", updateActiveNav);
+  window.addEventListener("load", updateActiveNav);
+  updateActiveNav();
+
 })();
+
+/* V17 — expansão da lista de doenças tratadas */
+document.addEventListener("DOMContentLoaded", function () {
+  const list = document.getElementById("doencas-lista");
+  const button = document.querySelector(".disease-toggle");
+  if (!list || !button) return;
+
+  const extras = Array.from(list.querySelectorAll(".disease-extra"));
+  let expanded = false;
+
+  function render() {
+    extras.forEach(item => { item.hidden = !expanded; });
+    button.textContent = expanded ? "Veja menos" : "Veja mais";
+    button.setAttribute("aria-expanded", String(expanded));
+  }
+
+  render();
+  button.addEventListener("click", function () {
+    expanded = !expanded;
+    render();
+  });
+});
