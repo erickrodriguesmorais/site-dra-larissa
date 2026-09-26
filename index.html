@@ -3,55 +3,211 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dra. Larissa Rodrigues | Clínica Médica</title>
-<meta name="description" content="Dra. Larissa Rodrigues — Clínica Médica. Atendimento presencial, telemedicina e atendimento domiciliar.">
+<title>Dra. Larissa Lima | Clínica Médica</title>
+<meta name="description" content="Dra. Larissa Lima — Clínica Médica. Atendimento presencial, telemedicina e atendimento domiciliar.">
 <link rel="stylesheet" href="styles.css">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
-<body><a class="skip-link" href="#main">Ir para o conteúdo</a>
+<body>
+<a class="skip-link" href="#home">Ir para o conteúdo</a>
+
 <header class="header">
-  <a class="brand" href="index.html">Dra. Larissa Rodrigues<span>Clínica Médica</span></a>
-  <button class="menu-btn" aria-label="Abrir menu" onclick="document.body.classList.toggle('menu-open')">☰</button>
-  <nav class="nav">
-    <a class="active" href="index.html">Começar</a>
-    <a href="sobre.html">Sobre mim</a>
-    <a href="preco.html">Preço</a>
-    <a href="depoimentos.html">Depoimentos</a>
-    <a href="contato.html">Contato</a>
+  <a class="brand" href="#home">Dra. Larissa Lima<span>Clínica Médica</span></a>
+  <button class="menu-btn" aria-label="Abrir menu" aria-expanded="false" onclick="document.body.classList.toggle('menu-open'); this.setAttribute('aria-expanded', document.body.classList.contains('menu-open'))">☰</button>
+
+  <nav class="nav" aria-label="Navegação principal">
+    <a class="active" href="#home">Começar</a>
+    <a href="#sobre">Sobre mim</a>
+    <a href="#preco">Preço</a>
+    <a href="#depoimentos">Depoimentos</a>
+    <a href="#contato">Contato</a>
   </nav>
-  <a class="btn btn-small" href="https://wa.me/5500000000000?text=Ol%C3%A1%2C%20Dra.%20Larissa!%20Gostaria%20de%20agendar%20uma%20consulta.">Agendar</a>
+
+  <a class="btn btn-small" href="https://wa.me/5583998023806?text=Ol%C3%A1%2C%20Dra.%20Larissa!%20Gostaria%20de%20agendar%20uma%20consulta.">Agendar</a>
 </header>
 
 <main id="main">
-<section class="hero">
+
+<section id="home" class="one-page-section hero">
   <div class="hero-copy">
     <p class="eyebrow">CLÍNICA MÉDICA</p>
     <h1>Cuidado médico com <em>escuta, acolhimento</em> e atenção individual.</h1>
     <p class="lead">Um atendimento próximo e humanizado, respeitando a história e as necessidades de cada paciente.</p>
+
     <div class="actions">
-      <a class="btn" href="https://wa.me/5500000000000?text=Ol%C3%A1%2C%20Dra.%20Larissa!%20Gostaria%20de%20agendar%20uma%20consulta.">Agendar pelo WhatsApp</a>
-      <a class="link" href="sobre.html">Conheça a Dra. Larissa →</a>
+      <a class="btn" href="https://wa.me/5583998023806?text=Ol%C3%A1%2C%20Dra.%20Larissa!%20Gostaria%20de%20agendar%20uma%20consulta.">Agendar pelo WhatsApp</a>
+      <a class="link" href="#sobre">Conheça a Dra. Larissa →</a>
     </div>
+
     <div class="quick">
       <div><strong>Presencial</strong><span>Consulta médica</span></div>
       <div><strong>Telemedicina</strong><span>Atendimento à distância</span></div>
       <div><strong>Domiciliar</strong><span>Atendimento em casa</span></div>
     </div>
   </div>
+
   <div class="hero-photo">
-    <img src="images/dra-larissa-hero.jpg" alt="Dra. Larissa Rodrigues">
-    <div class="crm">CRM-PB<br><strong>12145</strong></div>
+    <img src="images/dra-larissa-hero.jpg" alt="Dra. Larissa Lima">
+    <div class="crm">CRM-PB<br><strong>20015</strong></div>
   </div>
 </section>
 
-<section class="intro">
-  <div><p class="eyebrow">DIRETO AO PONTO</p><h2>Informação clara para você.</h2></div>
-  <p>Encontre rapidamente informações sobre a Dra. Larissa, valores, depoimentos e formas de contato. Para agendar, é só chamar no WhatsApp.</p>
+<section id="sobre" class="one-page-section about-hero">
+  <div class="about-photo">
+    <img src="images/dra-larissa-sobre.jpg" alt="Dra. Larissa Lima">
+  </div>
+
+  <div class="about-copy">
+    <p class="eyebrow">SOBRE MIM</p>
+    <h2>Uma história construída com <em>humildade, esforço e fé.</em></h2>
+
+    <p>Sou fruto de uma história de humildade, esforço e fé. Cresci em meio a desafios, onde a batalha sempre fez parte da rotina.</p>
+    <p>Nesse caminho, aprendi o valor do trabalho, da disciplina e da gratidão, princípios que me guiaram até me tornar médica.</p>
+    <p class="highlight">A medicina, para mim, é sobre gente.</p>
+    <p>É sobre escuta, acolhimento e respeito. É olhar cada paciente de forma única, com suas histórias, medos e esperanças.</p>
+    <p>Levo a humanidade como parte essencial da minha prática, porque acredito que, por trás de cada diagnóstico, existe uma vida.</p>
+
+    <div class="formation-inline">
+      <div><span>01</span><strong>Graduação em Medicina</strong><small>Universidade Federal da Paraíba — UFPB</small></div>
+      <div><span>02</span><strong>Residência em Clínica Médica</strong><small>Hospital Universitário Lauro Wanderley — UFPB</small></div>
+      <div><span>03</span><strong>Registro profissional</strong><small>CRM-PB 20015</small></div>
+    </div>
+  </div>
 </section>
+
+<section id="preco" class="one-page-section price-section">
+  <div class="price-head">
+    <p class="eyebrow">VALORES</p>
+    <h2>Escolha o atendimento<br><em>que combina com você.</em></h2>
+    <p>Informações simples e transparentes. Para confirmar disponibilidade e horário, fale pelo WhatsApp.</p>
+  </div>
+
+  <div class="prices">
+    <article class="price-card">
+      <span class="price-label">PRESENCIAL</span>
+      <h3>Consulta médica</h3>
+      <p>Avaliação clínica individualizada e acompanhamento.</p>
+      <div class="price">R$ <strong>___</strong></div>
+      <a class="btn" href="https://wa.me/5583998023806?text=Ol%C3%A1%2C%20Dra.%20Larissa!%20Gostaria%20de%20agendar%20uma%20consulta%20presencial.">Agendar</a>
+    </article>
+
+    <article class="price-card featured">
+      <span class="price-label">TELEMEDICINA</span>
+      <h3>Consulta online</h3>
+      <p>Atendimento médico à distância, com praticidade e acolhimento.</p>
+      <div class="price">R$ <strong>___</strong></div>
+      <a class="btn" href="https://wa.me/5583998023806?text=Ol%C3%A1%2C%20Dra.%20Larissa!%20Gostaria%20de%20agendar%20uma%20teleconsulta.">Agendar</a>
+    </article>
+
+    <article class="price-card">
+      <span class="price-label">DOMICILIAR</span>
+      <h3>Atendimento em casa</h3>
+      <p>Cuidado médico no conforto do seu lar.</p>
+      <div class="price">R$ <strong>___</strong></div>
+      <a class="btn" href="https://wa.me/5583998023806?text=Ol%C3%A1%2C%20Dra.%20Larissa!%20Gostaria%20de%20informa%C3%A7%C3%B5es%20sobre%20atendimento%20domiciliar.">Consultar</a>
+    </article>
+  </div>
+
+  <div class="price-note">
+    <strong>Importante</strong>
+    <p>Os valores serão preenchidos conforme a definição da Dra. Larissa. O agendamento é realizado diretamente pelo WhatsApp.</p>
+  </div>
+</section>
+
+<section id="depoimentos" class="one-page-section testimonials-section">
+  <div class="testimonials-head">
+    <p class="eyebrow">DEPOIMENTOS</p>
+    <h2>Experiências de quem<br><em>já foi atendido.</em></h2>
+    <p>Um espaço reservado para avaliações reais de pacientes, publicadas com autorização.</p>
+  </div>
+
+  <div class="testimonial-grid">
+    <article class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <p>“Depoimento do paciente será inserido aqui.”</p>
+      <strong>Nome do paciente</strong>
+      <span>Paciente</span>
+    </article>
+
+    <article class="testimonial-card featured-testimonial">
+      <div class="stars">★★★★★</div>
+      <p>“Depoimento do paciente será inserido aqui.”</p>
+      <strong>Nome do paciente</strong>
+      <span>Paciente</span>
+    </article>
+
+    <article class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <p>“Depoimento do paciente será inserido aqui.”</p>
+      <strong>Nome do paciente</strong>
+      <span>Paciente</span>
+    </article>
+  </div>
+
+  <div class="testimonial-note">
+    <div>
+      <p class="eyebrow">TRANSPARÊNCIA</p>
+      <h3>Histórias reais, com respeito à privacidade.</h3>
+    </div>
+    <p>Os depoimentos finais serão adicionados somente após autorização dos pacientes. Podemos também optar por exibir apenas primeiro nome ou iniciais.</p>
+  </div>
+</section>
+
+<section id="contato" class="one-page-section contact-section">
+  <div class="contact-head">
+    <p class="eyebrow">CONTATO</p>
+    <h2>Vamos conversar sobre<br><em>o seu cuidado.</em></h2>
+    <p>Para informações, disponibilidade ou agendamento, entre em contato diretamente pelo WhatsApp.</p>
+    <a class="btn contact-main-btn" href="https://wa.me/5583998023806?text=Ol%C3%A1%2C%20Dra.%20Larissa!%20Gostaria%20de%20informa%C3%A7%C3%B5es%20sobre%20uma%20consulta.">Falar pelo WhatsApp</a>
+  </div>
+
+  <div class="contact-grid">
+    <article class="contact-card">
+      <span>WHATSAPP</span>
+      <h3>(83) 99802-3806</h3>
+      <p>Agendamentos e informações.</p>
+      <a href="https://wa.me/5583998023806">Enviar mensagem →</a>
+    </article>
+
+    <article class="contact-card">
+      <span>INSTAGRAM</span>
+      <h3>@dra.larissa</h3>
+      <p>Acompanhe conteúdos sobre saúde e medicina.</p>
+      <a href="#">Visitar Instagram →</a>
+    </article>
+
+    <article class="contact-card">
+      <span>ATENDIMENTO</span>
+      <h3>Presencial e online</h3>
+      <p>Consultório, telemedicina e atendimento domiciliar.</p>
+    </article>
+  </div>
+
+  <div class="location">
+    <div>
+      <p class="eyebrow">LOCALIZAÇÃO</p>
+      <h3>Consultório</h3>
+      <p class="placeholder">Endereço será inserido aqui.</p>
+      <p class="placeholder">João Pessoa — PB</p>
+    </div>
+    <div class="map-placeholder">
+      <span>Mapa / localização</span>
+      <small>Endereço será configurado na versão final.</small>
+    </div>
+  </div>
+
+  <div class="contact-hours">
+    <div><strong>Horários de atendimento</strong><span>Segunda a sexta — horários a definir</span></div>
+    <div><strong>CRM-PB</strong><span>12145</span></div>
+  </div>
+</section>
+
 </main>
 
-<footer>© 2026 Dra. Larissa Rodrigues · Clínica Médica</footer>
+<footer>© 2026 Dra. Larissa Lima · Clínica Médica</footer>
+
+<a class="mobile-whatsapp" href="https://wa.me/5583998023806?text=Ol%C3%A1%2C%20Dra.%20Larissa!%20Gostaria%20de%20agendar%20uma%20consulta.">Agendar pelo WhatsApp</a>
+
 <script src="script.js"></script>
-<a class="mobile-whatsapp" href="https://wa.me/5500000000000?text=Ol%C3%A1%2C%20Dra.%20Larissa!%20Gostaria%20de%20agendar%20uma%20consulta.">Agendar pelo WhatsApp</a>
 </body>
 </html>

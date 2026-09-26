@@ -40,3 +40,180 @@ a,button{ -webkit-tap-highlight-color:transparent}
 .skip-link{position:absolute;left:-9999px;top:10px;background:#fff;color:var(--brown);padding:10px 14px;border-radius:8px;z-index:100}
 .skip-link:focus{left:10px}
 :focus-visible{outline:3px solid #b99578;outline-offset:3px}
+
+
+/* ===== V11 — página única / navegação por seções ===== */
+html{
+  scroll-behavior:smooth;
+  scroll-snap-type:y proximity;
+}
+body{
+  overflow-x:hidden;
+}
+.one-page-section{
+  min-height:calc(100svh - 78px);
+  scroll-snap-align:start;
+  scroll-snap-stop:normal;
+  scroll-margin-top:78px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+/* HERO */
+.hero.one-page-section{
+  max-width:none;
+  margin:0 auto;
+  padding:55px 6%;
+}
+.hero.one-page-section .hero-copy{
+  padding:15px 0;
+}
+.hero.one-page-section .hero-photo img{
+  max-height:650px;
+}
+
+/* SOBRE */
+.about-hero.one-page-section{
+  max-width:none;
+  padding:65px 6%;
+  grid-template-columns:minmax(320px,.78fr) minmax(0,1fr);
+}
+.about-hero.one-page-section .about-copy h2{
+  font:500 clamp(40px,4.5vw,60px)/1.08 'Playfair Display',serif;
+  margin:0 0 22px;
+}
+.formation-inline{
+  margin-top:22px;
+  padding-top:18px;
+  border-top:1px solid var(--line);
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+}
+.formation-inline>div{
+  min-width:0;
+}
+.formation-inline span{
+  display:block;
+  color:var(--brown);
+  font-size:10px;
+  letter-spacing:2px;
+  margin-bottom:7px;
+}
+.formation-inline strong{
+  display:block;
+  font-size:13px;
+  line-height:1.35;
+}
+.formation-inline small{
+  display:block;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.45;
+  margin-top:5px;
+}
+
+/* PREÇO */
+.price-section.one-page-section{
+  padding:55px 6%;
+}
+.price-section .price-head{
+  padding:0;
+  max-width:900px;
+}
+.price-section .prices{
+  margin:30px auto 20px;
+  padding:0;
+  width:min(1180px,100%);
+}
+.price-section .price-note{
+  margin:0 auto;
+  width:min(1000px,100%);
+}
+
+/* DEPOIMENTOS */
+.testimonials-section.one-page-section{
+  padding:55px 6%;
+}
+.testimonials-section .testimonials-head{
+  padding:0;
+}
+.testimonials-section .testimonial-grid{
+  margin:30px auto 25px;
+  padding:0;
+  width:min(1180px,100%);
+}
+.testimonials-section .testimonial-note{
+  margin:0 auto;
+  padding:28px 6%;
+  width:min(1000px,100%);
+}
+
+/* CONTATO */
+.contact-section.one-page-section{
+  padding:55px 6% 45px;
+}
+.contact-section .contact-head{
+  padding:0;
+}
+.contact-section .contact-grid{
+  margin:28px auto 25px;
+  padding:0;
+  width:min(1180px,100%);
+}
+.contact-section .location{
+  margin:0 auto 25px;
+  padding:30px 6%;
+  width:min(1180px,100%);
+}
+.contact-section .contact-hours{
+  margin:0 auto;
+  width:min(1000px,100%);
+}
+
+/* desktop: sections fit naturally; mobile keeps normal scrolling */
+@media (min-width:851px){
+  .header{position:sticky;top:0}
+}
+
+@media (max-width:850px){
+  html{
+    scroll-snap-type:none;
+  }
+  .one-page-section{
+    min-height:auto;
+    scroll-snap-align:none;
+    scroll-margin-top:70px;
+    display:block;
+  }
+  .hero.one-page-section{
+    padding:45px 6% 60px;
+  }
+  .about-hero.one-page-section{
+    padding:50px 6%;
+    display:grid;
+    grid-template-columns:1fr;
+  }
+  .formation-inline{
+    grid-template-columns:1fr;
+    gap:14px;
+  }
+  .price-section.one-page-section,
+  .testimonials-section.one-page-section,
+  .contact-section.one-page-section{
+    padding:55px 6%;
+  }
+  .price-section .prices,
+  .testimonials-section .testimonial-grid,
+  .contact-section .contact-grid{
+    width:auto;
+  }
+  .price-section .price-note,
+  .testimonials-section .testimonial-note{
+    width:auto;
+  }
+  .contact-section .location{
+    width:auto;
+  }
+}
