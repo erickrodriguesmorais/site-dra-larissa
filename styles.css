@@ -917,7 +917,13 @@ body{
     grid-template-columns:repeat(2,1fr);
     gap:6px;
   }
-
+  
+.instagram-post:nth-child(3){
+  grid-column:1 / -1;
+  width:calc((100% - 6px) / 2);
+  justify-self:center;
+}
+  
   .instagram-post{
     border-radius:2px;
   }
