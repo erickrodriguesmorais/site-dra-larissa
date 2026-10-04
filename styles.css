@@ -932,7 +932,3 @@ body{
     margin-top:24px;
   }
 }
-/* Mostrar somente 3 posts do Instagram */
-.feedembed-post:nth-child(n+4){
-  display:none !important;
-}
