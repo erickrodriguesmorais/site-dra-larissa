@@ -63,3 +63,33 @@ document.addEventListener("DOMContentLoaded", function () {
     render();
   });
 });
+/* HERO — crossfade + zoom sutil, como no vídeo de referência */
+(() => {
+  const slides = [...document.querySelectorAll(".hero-slider .hero-slide")];
+  if (slides.length < 2) return;
+
+  let current = 0;
+  const displayTime = 5000;
+  const fadeTime = 2000;
+
+  function showSlide(next) {
+    const previous = current;
+    current = next % slides.length;
+
+    slides[previous].classList.remove("is-active");
+    slides[current].classList.add("is-active");
+
+    slides.forEach((slide, index) => {
+      const active = index === current;
+      if (active) {
+        slide.removeAttribute("aria-hidden");
+        slide.alt = "Dra. Larissa Lima";
+      } else {
+        slide.setAttribute("aria-hidden", "true");
+        slide.alt = "";
+      }
+    });
+  }
+
+  window.setInterval(() => showSlide(current + 1), displayTime + fadeTime);
+})();

@@ -875,7 +875,7 @@ body{
 }
 
 .instagram-post:hover img{
-  transform:scale(1.04);
+  transform:scale(1.055);
 }
 
 .instagram-more{
@@ -945,4 +945,107 @@ body{
     letter-spacing:0 !important;
   }
 }
+}
+/* ===== HERO — CARROSSEL IGUAL AO EFEITO DO VÍDEO =====
+   O vídeo usa uma área de foto fixa, com crossfade entre imagens
+   e zoom muito sutil. Não há deslocamento lateral.
+*/
+.hero.one-page-section .hero-photo.hero-slider{
+  position:relative;
+  width:100%;
+  max-width:520px;
+  aspect-ratio:2 / 3;
+  overflow:hidden;
+  border-radius:0 0 24px 24px;
+  justify-self:end;
+}
+
+.hero-slider-stage{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  border-radius:inherit;
+}
+
+.hero-slider .hero-slide{
+  position:absolute;
+  inset:0;
+  width:100% !important;
+  height:100% !important;
+  max-height:none !important;
+  object-fit:cover;
+  object-position:center top;
+  border-radius:inherit !important;
+  display:block;
+  opacity:0;
+  transform:scale(1);
+  transition:opacity 2s ease-in-out;
+  will-change:opacity, transform;
+}
+
+.hero-slider .hero-slide.is-active{
+  opacity:1;
+  animation:heroVideoZoom 7s ease-out forwards;
+}
+
+@keyframes heroVideoZoom{
+  from{transform:scale(1)}
+  to{transform:scale(1.055)}
+}
+
+.hero-slider .crm{
+  z-index:3;
+}
+
+@media(max-width:850px){
+  .hero.one-page-section .hero-photo.hero-slider{
+    width:100%;
+    max-width:520px;
+    aspect-ratio:2 / 3;
+    justify-self:center;
+    margin:auto;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .hero-slider .hero-slide{
+    transition:none;
+  }
+  .hero-slider .hero-slide.is-active{
+    animation:none;
+    transform:none;
+  }
+}
+
+
+
+/* ===== V6 — MOLDURA ARQUEADA APROVADA ===== */
+.hero-slider{
+  position:relative;
+  padding:10px;
+  background:transparent;
+  border:1.5px solid #bda58f;
+  border-radius:190px 190px 28px 28px;
+  box-shadow:none;
+}
+
+.hero-slider-track{
+  overflow:hidden;
+  border-radius:178px 178px 20px 20px;
+}
+
+.hero-slider .hero-slide{
+  border-radius:178px 178px 20px 20px;
+}
+
+@media(max-width:850px){
+  .hero-slider{
+    padding:7px;
+    border-radius:110px 110px 20px 20px;
+  }
+
+  .hero-slider-track,
+  .hero-slider .hero-slide{
+    border-radius:102px 102px 15px 15px;
+  }
 }
