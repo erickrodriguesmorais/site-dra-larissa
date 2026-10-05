@@ -978,19 +978,13 @@ body{
   border-radius:inherit !important;
   display:block;
   opacity:0;
-  transform:scale(1);
+  transform:scale(1.055);
   transition:opacity 2s ease-in-out;
-  will-change:opacity, transform;
+  will-change:opacity;
 }
 
 .hero-slider .hero-slide.is-active{
   opacity:1;
-  animation:heroVideoZoom 7s ease-out forwards;
-}
-
-@keyframes heroVideoZoom{
-  from{transform:scale(1)}
-  to{transform:scale(1.055)}
 }
 
 .hero-slider .crm{
