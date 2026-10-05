@@ -931,4 +931,18 @@ body{
   .instagram-more{
     margin-top:24px;
   }
+  /* ===== AJUSTE DO MENU NO CELULAR ===== */
+@media (max-width:850px){
+  .header .nav.nav-horizontal{
+    justify-content:space-between !important;
+  }
+
+  .header .nav.nav-horizontal a{
+    min-width:0 !important;
+    flex:1 1 20% !important;
+    padding:0 8px !important;
+    font-size:11px !important;
+    letter-spacing:0 !important;
+  }
+}
 }
