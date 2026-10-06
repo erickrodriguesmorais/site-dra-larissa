@@ -1044,3 +1044,137 @@ body{
     border-radius:102px 102px 15px 15px;
   }
 }
+/* =========================================================
+   PÁGINA — CONSULTA MÉDICA
+   ========================================================= */
+
+.consulta-page {
+  background: #f5eee6;
+}
+
+.consulta-page .consulta-hero {
+  padding: 90px 24px 70px;
+  text-align: center;
+}
+
+.consulta-page .consulta-hero-inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.consulta-page .eyebrow {
+  display: block;
+  margin-bottom: 18px;
+  color: #7d6048;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+.consulta-page h1 {
+  margin: 0 auto 22px;
+  color: #3b2a20;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(38px, 5vw, 58px);
+  line-height: 1.1;
+}
+
+.consulta-page .consulta-intro {
+  max-width: 720px;
+  margin: 0 auto;
+  color: #5f5046;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.consulta-page .consulta-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 24px 90px;
+}
+
+.consulta-page .consulta-card {
+  margin-bottom: 28px;
+  padding: 34px 38px;
+  background: #fffaf5;
+  border: 1px solid #e5d8cc;
+  border-radius: 18px;
+}
+
+.consulta-page .consulta-card h2 {
+  margin: 0 0 16px;
+  color: #3b2a20;
+  font-family: "Playfair Display", serif;
+  font-size: 28px;
+  line-height: 1.25;
+}
+
+.consulta-page .consulta-card p {
+  margin: 0 0 15px;
+  color: #5f5046;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.consulta-page .consulta-card p:last-child {
+  margin-bottom: 0;
+}
+
+.consulta-page .consulta-card ul {
+  margin: 0;
+  padding-left: 22px;
+  color: #5f5046;
+}
+
+.consulta-page .consulta-card li {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.consulta-page .consulta-cta {
+  margin-top: 45px;
+  text-align: center;
+}
+
+.consulta-page .consulta-cta a {
+  display: inline-block;
+  padding: 15px 30px;
+  border-radius: 30px;
+  background: #6f503b;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.consulta-page .consulta-cta a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(80, 55, 40, .15);
+}
+
+@media (max-width: 850px) {
+  .consulta-page .consulta-hero {
+    padding: 65px 20px 45px;
+  }
+
+  .consulta-page h1 {
+    font-size: 38px;
+  }
+
+  .consulta-page .consulta-intro {
+    font-size: 16px;
+  }
+
+  .consulta-page .consulta-content {
+    padding: 10px 16px 60px;
+  }
+
+  .consulta-page .consulta-card {
+    padding: 26px 22px;
+    border-radius: 15px;
+  }
+
+  .consulta-page .consulta-card h2 {
+    font-size: 24px;
+  }
+}
