@@ -63,35 +63,30 @@ document.addEventListener("DOMContentLoaded", function () {
     render();
   });
 });
-/* HERO — crossfade + zoom contínuo, sem reset entre as fotos */
+/* HERO — crossfade + zoom sutil, sem retorno brusco */
 (() => {
   const slides = [...document.querySelectorAll(".hero-slider .hero-slide")];
   if (slides.length < 2) return;
 
   let current = 0;
+
   const displayTime = 5000;
   const fadeTime = 2000;
+
+  const startZoom = 1.02;
+  const endZoom = 1.055;
   const zoomDuration = displayTime + fadeTime;
 
-  const startTime = performance.now();
-
-  function updateZoom(now) {
-    const elapsed = (now - startTime) % zoomDuration;
-    const progress = elapsed / zoomDuration;
-
-    // Zoom contínuo de 1.000 até 1.055
-    const scale = 1 + (0.055 * progress);
-
-    slides.forEach(slide => {
-      slide.style.transform = `scale(${scale})`;
-    });
-
-    requestAnimationFrame(updateZoom);
+  function setZoom(slide, progress) {
+    const scale = startZoom + ((endZoom - startZoom) * progress);
+    slide.style.transform = `scale(${scale})`;
   }
 
   function showSlide(next) {
     const previous = current;
     current = next % slides.length;
+
+    slides[current].style.transform = `scale(${startZoom})`;
 
     slides[previous].classList.remove("is-active");
     slides[current].classList.add("is-active");
@@ -107,10 +102,26 @@ document.addEventListener("DOMContentLoaded", function () {
         slide.alt = "";
       }
     });
+
+    const startTime = performance.now();
+
+    function animateZoom(now) {
+      if (!slides[current].classList.contains("is-active")) return;
+
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / zoomDuration, 1);
+
+      setZoom(slides[current], progress);
+
+      if (progress < 1) {
+        requestAnimationFrame(animateZoom);
+      }
+    }
+
+    requestAnimationFrame(animateZoom);
   }
 
   showSlide(0);
-  requestAnimationFrame(updateZoom);
 
   window.setInterval(
     () => showSlide(current + 1),
