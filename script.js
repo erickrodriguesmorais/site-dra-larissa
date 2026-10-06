@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
     render();
   });
 });
-/* HERO — crossfade + zoom sutil, como no vídeo de referência */
+/* HERO — crossfade + zoom contínuo, sem reset entre as fotos */
 (() => {
   const slides = [...document.querySelectorAll(".hero-slider .hero-slide")];
   if (slides.length < 2) return;
@@ -71,6 +71,23 @@ document.addEventListener("DOMContentLoaded", function () {
   let current = 0;
   const displayTime = 5000;
   const fadeTime = 2000;
+  const zoomDuration = displayTime + fadeTime;
+
+  const startTime = performance.now();
+
+  function updateZoom(now) {
+    const elapsed = (now - startTime) % zoomDuration;
+    const progress = elapsed / zoomDuration;
+
+    // Zoom contínuo de 1.000 até 1.055
+    const scale = 1 + (0.055 * progress);
+
+    slides.forEach(slide => {
+      slide.style.transform = `scale(${scale})`;
+    });
+
+    requestAnimationFrame(updateZoom);
+  }
 
   function showSlide(next) {
     const previous = current;
@@ -81,6 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     slides.forEach((slide, index) => {
       const active = index === current;
+
       if (active) {
         slide.removeAttribute("aria-hidden");
         slide.alt = "Dra. Larissa Lima";
@@ -91,5 +109,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  window.setInterval(() => showSlide(current + 1), displayTime + fadeTime);
+  showSlide(0);
+  requestAnimationFrame(updateZoom);
+
+  window.setInterval(
+    () => showSlide(current + 1),
+    displayTime + fadeTime
+  );
 })();
