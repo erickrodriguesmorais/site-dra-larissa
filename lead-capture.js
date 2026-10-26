@@ -25,26 +25,6 @@
     try{var response=await fetch(SUPABASE_URL+'/rest/v1/rpc/registrar_lead',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify({p_nome:name,p_whatsapp:whatsapp,p_origem:ORIGIN})});if(!response.ok)throw new Error('Não foi possível registrar seu contato agora.');var result=await response.json();if(!result||result.success!==true)throw new Error('O cadastro não foi confirmado. Tente novamente.');var destination=pendingHref;var message='Olá, Dra. Larissa! Meu nome é '+name+' e gostaria de continuar o atendimento.';if(destination.indexOf('text=')===-1)destination+=(destination.indexOf('?')>=0?'&':'?')+'text='+encodeURIComponent(message);closeModal();window.location.href=destination;
     }catch(err){showError((err&&err.message)||'Não foi possível registrar seu contato. Verifique sua conexão e tente novamente.');submit.disabled=false;submit.textContent='Tentar novamente';}
   }
-  ```javascript
-function isAppointmentLink(link) {
-  if (!link || !link.href || !/^https:\/\/wa\.me\//i.test(link.href)) {
-    return false;
-  }
-
-  var text = (link.textContent || '').trim().toLowerCase();
-  var label = (link.getAttribute('aria-label') || '').trim().toLowerCase();
-
-  return (
-    text.includes('agendar consulta') ||
-    label.includes('agendar consulta') ||
-    text.includes('agendar um atendimento') ||
-    text.includes('agendar uma consulta') ||
-    text.trim() === 'agendar' ||
-    label.trim() === 'agendar' ||
-    text.includes('agendar pelo whatsapp') ||
-    label.includes('agendar pelo whatsapp')
-  );
-}
-```
+  function isAppointmentLink(link){if(!link||!link.href||!/^https:\/\/wa\.me\//i.test(link.href))return false;var text=(link.textContent||'').trim().toLowerCase();var label=(link.getAttribute('aria-label')||'').trim().toLowerCase();return text.includes('agendar consulta')||label.includes('agendar consulta')||text.includes('agendar um atendimento')||text.includes('agendar uma consulta');}
   document.addEventListener('click',function(event){var link=event.target.closest&&event.target.closest('a[href]');if(!link||!isAppointmentLink(link))return;event.preventDefault();openModal(link.href);});
 })();
