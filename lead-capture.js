@@ -217,25 +217,20 @@
         );
       }
 
-      var destination = pendingHref;
+var message =
+  'Olá, Dra. Larissa! Meu nome é ' +
+  name +
+  ' e gostaria de agendar uma consulta na modalidade ' +
+  modality +
+  '.';
 
-      var message =
-        'Olá, Dra. Larissa! Meu nome é ' +
-        name +
-        ' e gostaria de agendar uma consulta na modalidade ' +
-        modality +
-        '.';
+var destination = new URL(pendingHref);
 
-      if (destination.indexOf('text=') === -1) {
-        destination +=
-          (destination.indexOf('?') >= 0 ? '&' : '?') +
-          'text=' +
-          encodeURIComponent(message);
-      }
+destination.searchParams.set('text', message);
 
-      closeModal();
+closeModal();
 
-      window.location.href = destination;
+window.location.href = destination.toString();
 
     } catch (error) {
       showError(
