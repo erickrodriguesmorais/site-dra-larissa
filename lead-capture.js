@@ -1,20 +1,22 @@
 ```javascript
-/* Captura de leads — formulário com modalidade de consulta. */
+/* Captura de leads — versão corrigida */
 (function () {
   'use strict';
 
   var SUPABASE_URL = 'https://bwhvfiklrvrodadbxoly.supabase.co';
-  var SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_R5xKqfJPBmp6PEsiRAvZ1w_IIypXVPZ';
-  var ORIGIN = document.documentElement.getAttribute('data-lead-origin') || 'site_principal';
+  var SUPABASE_KEY = 'sb_publishable_R5xKqfJPBmp6PEsiRAvZ1w_IIypXVPZ';
+  var ORIGIN =
+    document.documentElement.getAttribute('data-lead-origin') ||
+    'site_principal';
 
-  var pendingHref = '';
   var modal = null;
+  var pendingHref = '';
 
   function buildModal() {
-    var existingModal = document.getElementById('lead-capture-modal');
+    var existing = document.getElementById('lead-capture-modal');
 
-    if (existingModal) {
-      modal = existingModal;
+    if (existing) {
+      modal = existing;
       return;
     }
 
@@ -46,8 +48,8 @@
 
           <label for="lead-whatsapp">WhatsApp com DDD</label>
           <input id="lead-whatsapp" name="whatsapp" type="tel"
-            inputmode="tel" autocomplete="tel" maxlength="20"
-            placeholder="(83) 99999-9999" required>
+            inputmode="tel" autocomplete="tel"
+            maxlength="20" placeholder="(83) 99999-9999" required>
 
           <fieldset class="lead-modality">
             <legend>Qual modalidade de consulta deseja?</legend>
@@ -72,8 +74,8 @@
           </fieldset>
 
           <p class="lead-modal__privacy">
-            Usaremos esses dados para retornar seu contato sobre o agendamento.
-            Não informe sintomas ou dados de saúde neste formulário.
+            Usaremos esses dados para retornar seu contato sobre o
+            agendamento. Não informe sintomas ou dados de saúde neste formulário.
           </p>
 
           <p class="lead-modal__error"
@@ -94,12 +96,6 @@
 
     modal.querySelector('#lead-capture-form')
       .addEventListener('submit', submitLead);
-
-    document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape' && modal && !modal.hidden) {
-        closeModal();
-      }
-    });
   }
 
   function openModal(href) {
@@ -109,11 +105,7 @@
     modal.hidden = false;
     document.body.classList.add('lead-modal-open');
 
-    var error = modal.querySelector('#lead-form-error');
-    if (error) {
-      error.hidden = true;
-      error.textContent = '';
-    }
+    modal.querySelector('#lead-form-error').hidden = true;
 
     var button = modal.querySelector('.lead-modal__submit');
     button.disabled = false;
@@ -144,7 +136,9 @@
     var name = form.elements.nome.value.trim();
     var whatsapp = form.elements.whatsapp.value.trim();
     var digits = whatsapp.replace(/\D/g, '');
-    var selected = form.querySelector('input[name="modalidade"]:checked');
+    var selected = form.querySelector(
+      'input[name="modalidade"]:checked'
+    );
     var modality = selected ? selected.value : '';
     var button = form.querySelector('.lead-modal__submit');
 
@@ -176,8 +170,8 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': SUPABASE_PUBLISHABLE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY
           },
           body: JSON.stringify({
             p_nome: name,
@@ -190,7 +184,7 @@
 
       if (!response.ok) {
         throw new Error(
-          'Não foi possível registrar o contato. Tente novamente.'
+          'Não foi possível registrar seu contato. Tente novamente.'
         );
       }
 
@@ -222,33 +216,45 @@
     }
   }
 
-  function isAppointmentLink(link) {
-    if (!link || !link.href ||
-        !/^https:\/\/wa\.me\//i.test(link.href)) {
+  function isWhatsAppLink(link) {
+    if (!link || !link.href) return false;
+
+    try {
+      var url = new URL(link.href);
+
+      return (
+        url.protocol === 'https:' &&
+        (
+          url.hostname === 'wa.me' ||
+          url.hostname === 'www.wa.me' ||
+          url.hostname === 'api.whatsapp.com' ||
+          url.hostname === 'web.whatsapp.com'
+        )
+      );
+    } catch (error) {
       return false;
     }
-
-    var text = (link.textContent || '').trim().toLowerCase();
-    var label = (link.getAttribute('aria-label') || '').trim().toLowerCase();
-
-    return (
-      text.includes('agendar consulta') ||
-      label.includes('agendar consulta') ||
-      text.includes('agendar um atendimento') ||
-      text.includes('agendar uma consulta') ||
-      text.includes('agendar pelo whatsapp') ||
-      text === 'agendar' ||
-      text === 'consultar'
-    );
   }
 
+  // Captura os cliques mesmo quando o botão contém ícones ou outros elementos.
   document.addEventListener('click', function (event) {
-    var link = event.target.closest && event.target.closest('a[href]');
+    var target = event.target;
+    var link = target && target.closest
+      ? target.closest('a[href]')
+      : null;
 
-    if (!link || !isAppointmentLink(link)) return;
+    if (!link || !isWhatsAppLink(link)) return;
 
     event.preventDefault();
     openModal(link.href);
   });
+
+  // Garante que o formulário esteja pronto quando a página terminar de carregar.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', buildModal);
+  } else {
+    buildModal();
+  }
+
 })();
 ```
