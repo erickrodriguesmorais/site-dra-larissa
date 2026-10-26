@@ -1,5 +1,5 @@
 ```javascript
-/* Captura de leads — adicionada sem alterar o layout original. */
+/* Captura de leads — formulário integrado ao Supabase. */
 (function () {
   'use strict';
 
@@ -11,11 +11,13 @@
     'site_principal';
 
   var pendingHref = '';
-  var modal;
+  var modal = null;
 
   function buildModal() {
-    if (document.getElementById('lead-capture-modal')) {
-      modal = document.getElementById('lead-capture-modal');
+    var existingModal = document.getElementById('lead-capture-modal');
+
+    if (existingModal) {
+      modal = existingModal;
       return;
     }
 
@@ -43,8 +45,8 @@
 
     document.body.appendChild(modal);
 
-    modal.querySelectorAll('[data-lead-close]').forEach(function (el) {
-      el.addEventListener('click', closeModal);
+    modal.querySelectorAll('[data-lead-close]').forEach(function (element) {
+      element.addEventListener('click', closeModal);
     });
 
     document.addEventListener('keydown', function (event) {
@@ -64,11 +66,15 @@
 
     document.body.classList.add('lead-modal-open');
 
-    modal.querySelector('#lead-form-error').hidden = true;
+    var error = modal.querySelector('#lead-form-error');
+    if (error) {
+      error.hidden = true;
+      error.textContent = '';
+    }
 
-    var button = modal.querySelector('.lead-modal__submit');
-    button.disabled = false;
-    button.textContent = 'Continuar para o WhatsApp';
+    var submitButton = modal.querySelector('.lead-modal__submit');
+    submitButton.disabled = false;
+    submitButton.textContent = 'Continuar para o WhatsApp';
 
     setTimeout(function () {
       modal.querySelector('#lead-name').focus();
@@ -159,7 +165,6 @@
       }
 
       closeModal();
-
       window.location.href = destination;
 
     } catch (error) {
@@ -174,40 +179,51 @@
   }
 
   function isAppointmentLink(link) {
-    if (!link || !link.href || !/^https:\/\/wa\.me\//i.test(link.href)) {
+    if (!link || !link.href) {
+      return false;
+    }
+
+    // Aceita links diretos do WhatsApp.
+    if (!/^https:\/\/wa\.me\//i.test(link.href)) {
       return false;
     }
 
     var text = (link.textContent || '').trim().toLowerCase();
     var label = (link.getAttribute('aria-label') || '').trim().toLowerCase();
 
-    var isPricePage =
-      /(^|\/)preco(?:\.html)?\/?$/i.test(window.location.pathname);
-
     /*
-     * Na página de preços, reconhece todos os botões
-     * de agendamento e consulta, inclusive:
-     * "Agendar", "Consultar" e "Agendar pelo WhatsApp".
-     */
-    if (isPricePage) {
-      return (
-        text.includes('agendar') ||
-        text.includes('consultar') ||
-        label.includes('agendar') ||
-        label.includes('consultar')
-      );
-    }
-
-    /*
-     * Nas demais páginas, mantém as regras originais.
+     * Reconhece botões de agendamento em todas as páginas:
+     * "Agendar consulta", "Agendar", "Consultar"
+     * e "Agendar pelo WhatsApp".
      */
     return (
-      text.includes('agendar consulta') ||
-      label.includes('agendar consulta') ||
-      text.includes('agendar um atendimento') ||
-      text.includes('agendar uma consulta')
+      text.includes('agendar') ||
+      label.includes('agendar') ||
+      text.includes('consultar') ||
+      label.includes('consultar')
     );
   }
 
+  /*
+   * Listener único para os botões do site.
+   * Funciona também em botões cujo texto está dentro de spans ou ícones.
+   */
   document.addEventListener('click', function (event) {
-    var link = event
+    var target = event.target;
+
+    if (!target || typeof target.closest !== 'function') {
+      return;
+    }
+
+    var link = target.closest('a[href]');
+
+    if (!link || !isAppointmentLink(link)) {
+      return;
+    }
+
+    event.preventDefault();
+    openModal(link.href);
+  });
+
+})();
+```
