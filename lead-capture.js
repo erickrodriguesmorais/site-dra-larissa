@@ -57,36 +57,15 @@
             placeholder="(83) 99999-9999"
             required>
 
-          <fieldset class="lead-modality">
-            <legend>Qual modalidade de consulta deseja?</legend>
-
-            <label class="lead-modality__option">
-              <input
-                type="radio"
-                name="modalidade"
-                value="Presencial"
-                required>
-              <span>Presencial</span>
-            </label>
-
-            <label class="lead-modality__option">
-              <input
-                type="radio"
-                name="modalidade"
-                value="Telemedicina"
-                required>
-              <span>Telemedicina</span>
-            </label>
-
-            <label class="lead-modality__option">
-              <input
-                type="radio"
-                name="modalidade"
-                value="Domiciliar"
-                required>
-              <span>Domiciliar</span>
-            </label>
-          </fieldset>
+<div class="lead-modality">
+  <label for="lead-modality-select">Qual modalidade de consulta deseja?</label>
+  <select id="lead-modality-select" name="modalidade" required>
+    <option value="" selected disabled>Selecione a modalidade</option>
+    <option value="Presencial">Presencial</option>
+    <option value="Telemedicina">Telemedicina</option>
+    <option value="Domiciliar">Domiciliar</option>
+  </select>
+</div>  
 
           <p class="lead-modal__privacy">
             Usaremos esses dados apenas para retornar seu contato sobre o agendamento.
@@ -159,8 +138,7 @@
     var name = form.elements.nome.value.trim();
     var whatsapp = form.elements.whatsapp.value.trim();
     var digits = whatsapp.replace(/\D/g, '');
-    var modalityInput = form.querySelector('input[name="modalidade"]:checked');
-    var modality = modalityInput ? modalityInput.value : '';
+    var modality = form.elements.modalidade.value;
     var submit = form.querySelector('.lead-modal__submit');
 
     if (name.length < 3) {
