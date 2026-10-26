@@ -37,13 +37,91 @@
   function openModal(href){buildModal();pendingHref=href;modal.hidden=false;document.body.classList.add('lead-modal-open');modal.querySelector('#lead-form-error').hidden=true;var b=modal.querySelector('.lead-modal__submit');b.disabled=false;b.textContent='Continuar para o WhatsApp';setTimeout(function(){modal.querySelector('#lead-name').focus();},0);}
   function closeModal(){if(!modal)return;modal.hidden=true;document.body.classList.remove('lead-modal-open');}
   function showError(message){var e=modal.querySelector('#lead-form-error');e.textContent=message;e.hidden=false;}
-  async function submitLead(event){event.preventDefault();var form=event.currentTarget;var name=form.elements.nome.value.trim();var whatsapp=form.elements.whatsapp.value.trim();var digits=whatsapp.replace(/\D/g,'');var submit=form.querySelector('.lead-modal__submit');
-    if(name.length<3){showError('Digite seu nome completo para continuar.');form.elements.nome.focus();return;}
-    if(digits.length<10||digits.length>15){showError('Confira o número do WhatsApp, incluindo o DDD.');form.elements.whatsapp.focus();return;}
-    submit.disabled=true;submit.textContent='Registrando contato...';modal.querySelector('#lead-form-error').hidden=true;
-    try{var response=await fetch(SUPABASE_URL+'/rest/v1/rpc/registrar_lead',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify({p_nome:name,p_whatsapp:whatsapp,p_origem:ORIGIN})});if(!response.ok)throw new Error('Não foi possível registrar seu contato agora.');var result=await response.json();if(!result||result.success!==true)throw new Error('O cadastro não foi confirmado. Tente novamente.');var destination=pendingHref;var message='Olá, Dra. Larissa! Meu nome é '+name+' e gostaria de continuar o atendimento.';if(destination.indexOf('text=')===-1)destination+=(destination.indexOf('?')>=0?'&':'?')+'text='+encodeURIComponent(message);closeModal();window.location.href=destination;
-    }catch(err){showError((err&&err.message)||'Não foi possível registrar seu contato. Verifique sua conexão e tente novamente.');submit.disabled=false;submit.textContent='Tentar novamente';}
+```javascript
+  async function submitLead(event) {
+    event.preventDefault();
+
+    var form = event.currentTarget;
+    var name = form.elements.nome.value.trim();
+    var whatsapp = form.elements.whatsapp.value.trim();
+    var digits = whatsapp.replace(/\D/g, '');
+    var modalityInput = form.querySelector('input[name="modalidade"]:checked');
+    var modality = modalityInput ? modalityInput.value : '';
+    var submit = form.querySelector('.lead-modal__submit');
+
+    if (name.length < 3) {
+      showError('Digite seu nome completo para continuar.');
+      form.elements.nome.focus();
+      return;
+    }
+
+    if (digits.length < 10 || digits.length > 15) {
+      showError('Confira o número do WhatsApp, incluindo o DDD.');
+      form.elements.whatsapp.focus();
+      return;
+    }
+
+    if (!['Presencial', 'Telemedicina', 'Domiciliar'].includes(modality)) {
+      showError('Selecione a modalidade de consulta desejada.');
+      return;
+    }
+
+    submit.disabled = true;
+    submit.textContent = 'Registrando contato...';
+    modal.querySelector('#lead-form-error').hidden = true;
+
+    try {
+      var response = await fetch(
+        SUPABASE_URL + '/rest/v1/rpc/registrar_lead',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY
+          },
+          body: JSON.stringify({
+            p_nome: name,
+            p_whatsapp: whatsapp,
+            p_origem: ORIGIN,
+            p_modalidade: modality
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Não foi possível registrar seu contato agora.');
+      }
+
+      var result = await response.json();
+
+      if (!result || result.success !== true) {
+        throw new Error('O cadastro não foi confirmado. Tente novamente.');
+      }
+
+      var destination = new URL(pendingHref);
+
+      var message =
+        'Olá, Dra. Larissa! Meu nome é ' + name +
+        ' e gostaria de informações sobre uma consulta ' +
+        modality.toLowerCase() + '.';
+
+      destination.searchParams.set('text', message);
+
+      closeModal();
+      window.location.href = destination.toString();
+
+    } catch (err) {
+      showError(
+        (err && err.message) ||
+        'Não foi possível registrar seu contato. Verifique sua conexão e tente novamente.'
+      );
+
+      submit.disabled = false;
+      submit.textContent = 'Tentar novamente';
+    }
   }
+```
   function isAppointmentLink(link){if(!link||!link.href||!/^https:\/\/wa\.me\//i.test(link.href))return false;var text=(link.textContent||'').trim().toLowerCase();var label=(link.getAttribute('aria-label')||'').trim().toLowerCase();return text.includes('agendar consulta')||label.includes('agendar consulta')||text.includes('agendar um atendimento')||text.includes('agendar uma consulta');}
   document.addEventListener('click',function(event){var link=event.target.closest&&event.target.closest('a[href]');if(!link||!isAppointmentLink(link))return;event.preventDefault();openModal(link.href);});
 })();
