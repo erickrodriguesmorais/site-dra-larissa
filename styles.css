@@ -1396,3 +1396,173 @@ body{
   outline: 2px solid #694833;
   outline-offset: 2px;
 }
+
+
+/* ===== CORREÇÃO DO MODAL DE AGENDAMENTO ===== */
+
+#lead-capture-modal[hidden] {
+  display: none !important;
+}
+
+#lead-capture-modal:not([hidden]) {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  padding: 20px !important;
+  overflow-y: auto !important;
+}
+
+#lead-capture-modal .lead-modal__backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(35, 25, 19, 0.62) !important;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+#lead-capture-modal .lead-modal__dialog {
+  position: relative !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  max-width: 440px !important;
+  max-height: calc(100dvh - 40px) !important;
+  margin: auto !important;
+  padding: 32px 28px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  background: #fbf8f3 !important;
+  border: 1px solid #dfd2c4 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.22) !important;
+  color: #33271f !important;
+}
+
+#lead-capture-modal .lead-modal__dialog h2 {
+  margin: 0 35px 12px 0 !important;
+  color: #684733 !important;
+  font-family: 'Playfair Display', serif !important;
+  font-size: 30px !important;
+  line-height: 1.2 !important;
+}
+
+#lead-capture-modal .lead-modal__dialog > p {
+  margin: 0 0 24px !important;
+  color: #776a60 !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+#lead-capture-modal #lead-capture-form > label {
+  display: block !important;
+  margin: 16px 0 7px !important;
+  color: #33271f !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+#lead-capture-modal #lead-capture-form > input,
+#lead-capture-modal #lead-modality-select {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 48px !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  box-sizing: border-box !important;
+  border: 1px solid #dfd2c4 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: #33271f !important;
+  font: 14px 'DM Sans', sans-serif !important;
+}
+
+#lead-capture-modal .lead-modality {
+  display: block !important;
+  width: 100% !important;
+  margin: 20px 0 !important;
+}
+
+#lead-capture-modal .lead-modality label {
+  display: block !important;
+  margin-bottom: 8px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+#lead-capture-modal .lead-modal__privacy {
+  margin: 18px 0 !important;
+  color: #776a60 !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+}
+
+#lead-capture-modal .lead-modal__submit {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 50px !important;
+  margin-top: 18px !important;
+  padding: 14px 18px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #684733 !important;
+  color: #fff !important;
+  font: 600 13px 'DM Sans', sans-serif !important;
+  cursor: pointer !important;
+}
+
+#lead-capture-modal .lead-modal__submit:disabled {
+  cursor: wait !important;
+  opacity: 0.7 !important;
+}
+
+#lead-capture-modal .lead-modal__close {
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  z-index: 2 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: #efe5db !important;
+  color: #684733 !important;
+  font-size: 25px !important;
+  cursor: pointer !important;
+}
+
+#lead-capture-modal .lead-modal__error {
+  margin: 12px 0 !important;
+  color: #a12626 !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+body.lead-modal-open {
+  overflow: hidden !important;
+}
+
+@media (max-width: 480px) {
+  #lead-capture-modal:not([hidden]) {
+    padding: 12px !important;
+  }
+
+  #lead-capture-modal .lead-modal__dialog {
+    max-height: calc(100dvh - 24px) !important;
+    padding: 28px 20px !important;
+  }
+
+  #lead-capture-modal .lead-modal__dialog h2 {
+    font-size: 27px !important;
+  }
+}
