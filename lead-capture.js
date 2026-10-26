@@ -9,26 +9,49 @@
   function buildModal() {
     if (document.getElementById('lead-capture-modal')) return;
     modal = document.createElement('div'); modal.id='lead-capture-modal'; modal.className='lead-modal'; modal.hidden=true;
-    modal.innerHTML = '<div class="lead-modal__backdrop" data-lead-close></div><section class="lead-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="lead-modal-title"><button type="button" class="lead-modal__close" aria-label="Fechar formulário" data-lead-close>&times;</button><h2 id="lead-modal-title">Agendar consulta</h2><p>Informe seus dados para continuar pelo WhatsApp.</p><form id="lead-capture-form" novalidate><label for="lead-name">Nome completo</label><input id="lead-name" name="nome" type="text" autocomplete="name" maxlength="120" required><label for="lead-whatsapp">WhatsApp com DDD</label><input id="lead-whatsapp" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="(83) 99999-9999" required>
-      <fieldset class="lead-modality">
-  <legend>Qual modalidade de consulta deseja?</legend>
+```javascript
+    modal.innerHTML = `
+      <div class="lead-modal__backdrop" data-lead-close></div>
+      <section class="lead-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="lead-modal-title">
+        <button type="button" class="lead-modal__close" aria-label="Fechar formulário" data-lead-close>&times;</button>
+        <h2 id="lead-modal-title">Agendar consulta</h2>
+        <p>Informe seus dados para continuar pelo WhatsApp.</p>
 
-  <label class="lead-modality__option">
-    <input type="radio" name="modalidade" value="Presencial" required>
-    <span>Presencial</span>
-  </label>
+        <form id="lead-capture-form" novalidate>
+          <label for="lead-name">Nome completo</label>
+          <input id="lead-name" name="nome" type="text" autocomplete="name" maxlength="120" required>
 
-  <label class="lead-modality__option">
-    <input type="radio" name="modalidade" value="Telemedicina" required>
-    <span>Telemedicina</span>
-  </label>
+          <label for="lead-whatsapp">WhatsApp com DDD</label>
+          <input id="lead-whatsapp" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="(83) 99999-9999" required>
 
-  <label class="lead-modality__option">
-    <input type="radio" name="modalidade" value="Domiciliar" required>
-    <span>Domiciliar</span>
-  </label>
-</fieldset>
-      <p class="lead-modal__privacy">Usaremos esses dados apenas para retornar seu contato sobre o agendamento. Não informe sintomas ou dados de saúde neste formulário.</p><p class="lead-modal__error" id="lead-form-error" role="alert" hidden></p><button type="submit" class="lead-modal__submit">Continuar para o WhatsApp</button></form></section>';
+          <fieldset class="lead-modality">
+            <legend>Qual modalidade de consulta deseja?</legend>
+
+            <label class="lead-modality__option">
+              <input type="radio" name="modalidade" value="Presencial" required>
+              <span>Presencial</span>
+            </label>
+
+            <label class="lead-modality__option">
+              <input type="radio" name="modalidade" value="Telemedicina" required>
+              <span>Telemedicina</span>
+            </label>
+
+            <label class="lead-modality__option">
+              <input type="radio" name="modalidade" value="Domiciliar" required>
+              <span>Domiciliar</span>
+            </label>
+          </fieldset>
+
+          <p class="lead-modal__privacy">Usaremos esses dados apenas para retornar seu contato sobre o agendamento. Não informe sintomas ou dados de saúde neste formulário.</p>
+
+          <p class="lead-modal__error" id="lead-form-error" role="alert" hidden></p>
+
+          <button type="submit" class="lead-modal__submit">Continuar para o WhatsApp</button>
+        </form>
+      </section>
+    `;
+```
     document.body.appendChild(modal);
     modal.querySelectorAll('[data-lead-close]').forEach(function(el){el.addEventListener('click',closeModal);});
     document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal&&!modal.hidden)closeModal();});
