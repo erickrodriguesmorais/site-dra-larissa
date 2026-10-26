@@ -1,4 +1,3 @@
-abaixo.
 /* Captura de leads — formulário de agendamento */
 (function () {
   'use strict';
