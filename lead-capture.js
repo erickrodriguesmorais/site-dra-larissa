@@ -1,5 +1,5 @@
 ```javascript
-/* Captura de leads — com seleção da modalidade de consulta. */
+/* Captura de leads — formulário com modalidade de consulta. */
 (function () {
   'use strict';
 
@@ -8,11 +8,13 @@
   var ORIGIN = document.documentElement.getAttribute('data-lead-origin') || 'site_principal';
 
   var pendingHref = '';
-  var modal;
+  var modal = null;
 
   function buildModal() {
-    if (document.getElementById('lead-capture-modal')) {
-      modal = document.getElementById('lead-capture-modal');
+    var existingModal = document.getElementById('lead-capture-modal');
+
+    if (existingModal) {
+      modal = existingModal;
       return;
     }
 
@@ -24,76 +26,47 @@
     modal.innerHTML = `
       <div class="lead-modal__backdrop" data-lead-close></div>
 
-      <section
-        class="lead-modal__dialog"
+      <section class="lead-modal__dialog"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="lead-modal-title"
-      >
-        <button
-          type="button"
+        aria-labelledby="lead-modal-title">
+
+        <button type="button"
           class="lead-modal__close"
           aria-label="Fechar formulário"
-          data-lead-close
-        >&times;</button>
+          data-lead-close>&times;</button>
 
         <h2 id="lead-modal-title">Agendar consulta</h2>
-
         <p>Informe seus dados e escolha a modalidade de atendimento.</p>
 
         <form id="lead-capture-form" novalidate>
           <label for="lead-name">Nome completo</label>
-          <input
-            id="lead-name"
-            name="nome"
-            type="text"
-            autocomplete="name"
-            maxlength="120"
-            required
-          >
+          <input id="lead-name" name="nome" type="text"
+            autocomplete="name" maxlength="120" required>
 
           <label for="lead-whatsapp">WhatsApp com DDD</label>
-          <input
-            id="lead-whatsapp"
-            name="whatsapp"
-            type="tel"
-            inputmode="tel"
-            autocomplete="tel"
-            maxlength="20"
-            placeholder="(83) 99999-9999"
-            required
-          >
+          <input id="lead-whatsapp" name="whatsapp" type="tel"
+            inputmode="tel" autocomplete="tel" maxlength="20"
+            placeholder="(83) 99999-9999" required>
 
           <fieldset class="lead-modality">
             <legend>Qual modalidade de consulta deseja?</legend>
 
             <label class="lead-modality__option">
-              <input
-                type="radio"
-                name="modalidade"
-                value="Presencial"
-                required
-              >
+              <input type="radio" name="modalidade"
+                value="Presencial" required>
               <span>Presencial</span>
             </label>
 
             <label class="lead-modality__option">
-              <input
-                type="radio"
-                name="modalidade"
-                value="Telemedicina"
-                required
-              >
+              <input type="radio" name="modalidade"
+                value="Telemedicina" required>
               <span>Telemedicina</span>
             </label>
 
             <label class="lead-modality__option">
-              <input
-                type="radio"
-                name="modalidade"
-                value="Domiciliar"
-                required
-              >
+              <input type="radio" name="modalidade"
+                value="Domiciliar" required>
               <span>Domiciliar</span>
             </label>
           </fieldset>
@@ -103,12 +76,8 @@
             Não informe sintomas ou dados de saúde neste formulário.
           </p>
 
-          <p
-            class="lead-modal__error"
-            id="lead-form-error"
-            role="alert"
-            hidden
-          ></p>
+          <p class="lead-modal__error"
+            id="lead-form-error" role="alert" hidden></p>
 
           <button type="submit" class="lead-modal__submit">
             Continuar para o WhatsApp
@@ -123,10 +92,8 @@
       element.addEventListener('click', closeModal);
     });
 
-    modal.querySelector('#lead-capture-form').addEventListener(
-      'submit',
-      submitLead
-    );
+    modal.querySelector('#lead-capture-form')
+      .addEventListener('submit', submitLead);
 
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && modal && !modal.hidden) {
@@ -142,11 +109,15 @@
     modal.hidden = false;
     document.body.classList.add('lead-modal-open');
 
-    modal.querySelector('#lead-form-error').hidden = true;
+    var error = modal.querySelector('#lead-form-error');
+    if (error) {
+      error.hidden = true;
+      error.textContent = '';
+    }
 
-    var submitButton = modal.querySelector('.lead-modal__submit');
-    submitButton.disabled = false;
-    submitButton.textContent = 'Continuar para o WhatsApp';
+    var button = modal.querySelector('.lead-modal__submit');
+    button.disabled = false;
+    button.textContent = 'Continuar para o WhatsApp';
 
     setTimeout(function () {
       modal.querySelector('#lead-name').focus();
@@ -172,12 +143,10 @@
     var form = event.currentTarget;
     var name = form.elements.nome.value.trim();
     var whatsapp = form.elements.whatsapp.value.trim();
-    var modalityInput = form.querySelector(
-      'input[name="modalidade"]:checked'
-    );
-    var modality = modalityInput ? modalityInput.value : '';
     var digits = whatsapp.replace(/\D/g, '');
-    var submitButton = form.querySelector('.lead-modal__submit');
+    var selected = form.querySelector('input[name="modalidade"]:checked');
+    var modality = selected ? selected.value : '';
+    var button = form.querySelector('.lead-modal__submit');
 
     if (name.length < 3) {
       showError('Digite seu nome completo para continuar.');
@@ -196,8 +165,8 @@
       return;
     }
 
-    submitButton.disabled = true;
-    submitButton.textContent = 'Registrando contato...';
+    button.disabled = true;
+    button.textContent = 'Registrando contato...';
     modal.querySelector('#lead-form-error').hidden = true;
 
     try {
@@ -221,7 +190,7 @@
 
       if (!response.ok) {
         throw new Error(
-          'Não foi possível registrar seu contato agora. Tente novamente.'
+          'Não foi possível registrar o contato. Tente novamente.'
         );
       }
 
@@ -231,39 +200,31 @@
         throw new Error('O cadastro não foi confirmado. Tente novamente.');
       }
 
-      var destination = pendingHref;
-
       var message =
         'Olá, Dra. Larissa! Meu nome é ' + name +
-        '. Gostaria de informações sobre uma consulta ' +
+        ' e gostaria de informações sobre uma consulta ' +
         modality.toLowerCase() + '.';
 
-      if (destination.indexOf('text=') === -1) {
-        destination +=
-          (destination.indexOf('?') >= 0 ? '&' : '?') +
-          'text=' + encodeURIComponent(message);
-      }
+      var destination = new URL(pendingHref);
+      destination.searchParams.set('text', message);
 
       closeModal();
-      window.location.href = destination;
+      window.location.href = destination.toString();
 
     } catch (error) {
       showError(
-        (error && error.message) ||
+        error.message ||
         'Não foi possível registrar seu contato. Verifique sua conexão.'
       );
 
-      submitButton.disabled = false;
-      submitButton.textContent = 'Tentar novamente';
+      button.disabled = false;
+      button.textContent = 'Tentar novamente';
     }
   }
 
   function isAppointmentLink(link) {
-    if (
-      !link ||
-      !link.href ||
-      !/^https:\/\/wa\.me\//i.test(link.href)
-    ) {
+    if (!link || !link.href ||
+        !/^https:\/\/wa\.me\//i.test(link.href)) {
       return false;
     }
 
