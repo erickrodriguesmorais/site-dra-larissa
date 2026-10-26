@@ -175,4 +175,119 @@
     var modalityInput = form.querySelector(
       'input[name="modalidade"]:checked'
     );
-    var modality = modalityInput ? modalityInput
+    var modality = modalityInput ? modalityInput.value : '';
+    var digits = whatsapp.replace(/\D/g, '');
+    var submitButton = form.querySelector('.lead-modal__submit');
+
+    if (name.length < 3) {
+      showError('Digite seu nome completo para continuar.');
+      form.elements.nome.focus();
+      return;
+    }
+
+    if (digits.length < 10 || digits.length > 15) {
+      showError('Confira o número do WhatsApp, incluindo o DDD.');
+      form.elements.whatsapp.focus();
+      return;
+    }
+
+    if (!['Presencial', 'Telemedicina', 'Domiciliar'].includes(modality)) {
+      showError('Selecione a modalidade de consulta desejada.');
+      return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = 'Registrando contato...';
+    modal.querySelector('#lead-form-error').hidden = true;
+
+    try {
+      var response = await fetch(
+        SUPABASE_URL + '/rest/v1/rpc/registrar_lead',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY
+          },
+          body: JSON.stringify({
+            p_nome: name,
+            p_whatsapp: whatsapp,
+            p_origem: ORIGIN,
+            p_modalidade: modality
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          'Não foi possível registrar seu contato agora. Tente novamente.'
+        );
+      }
+
+      var result = await response.json();
+
+      if (!result || result.success !== true) {
+        throw new Error('O cadastro não foi confirmado. Tente novamente.');
+      }
+
+      var destination = pendingHref;
+
+      var message =
+        'Olá, Dra. Larissa! Meu nome é ' + name +
+        '. Gostaria de informações sobre uma consulta ' +
+        modality.toLowerCase() + '.';
+
+      if (destination.indexOf('text=') === -1) {
+        destination +=
+          (destination.indexOf('?') >= 0 ? '&' : '?') +
+          'text=' + encodeURIComponent(message);
+      }
+
+      closeModal();
+      window.location.href = destination;
+
+    } catch (error) {
+      showError(
+        (error && error.message) ||
+        'Não foi possível registrar seu contato. Verifique sua conexão.'
+      );
+
+      submitButton.disabled = false;
+      submitButton.textContent = 'Tentar novamente';
+    }
+  }
+
+  function isAppointmentLink(link) {
+    if (
+      !link ||
+      !link.href ||
+      !/^https:\/\/wa\.me\//i.test(link.href)
+    ) {
+      return false;
+    }
+
+    var text = (link.textContent || '').trim().toLowerCase();
+    var label = (link.getAttribute('aria-label') || '').trim().toLowerCase();
+
+    return (
+      text.includes('agendar consulta') ||
+      label.includes('agendar consulta') ||
+      text.includes('agendar um atendimento') ||
+      text.includes('agendar uma consulta') ||
+      text.includes('agendar pelo whatsapp') ||
+      text === 'agendar' ||
+      text === 'consultar'
+    );
+  }
+
+  document.addEventListener('click', function (event) {
+    var link = event.target.closest && event.target.closest('a[href]');
+
+    if (!link || !isAppointmentLink(link)) return;
+
+    event.preventDefault();
+    openModal(link.href);
+  });
+})();
+```
