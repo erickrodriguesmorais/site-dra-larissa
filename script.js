@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
 /* Espaçamento entre os botões do cartão de telemedicina */
 .price-card.featured > a.btn {
 display: table;
-margin-bottom: 10px;
+margin-bottom: 14px;
 }
 
 .price-card.featured > a.btn {
