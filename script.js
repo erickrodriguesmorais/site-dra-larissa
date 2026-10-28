@@ -131,14 +131,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 /* Botões lado a lado no cartão de telemedicina */
 .price-card.featured > a.btn {
-display: inline-flex;
+display: inline-flex !important;
+width: auto !important;
 align-items: center;
 justify-content: center;
-margin-right: 8px;
-margin-bottom: 0;
+margin: 0 8px 0 0 !important;
 vertical-align: middle;
 }
 
 .price-card.featured > a.btn {
-margin-right: 0;
+margin-right: 0 !important;
 }
