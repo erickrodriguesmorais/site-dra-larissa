@@ -129,12 +129,16 @@ document.addEventListener("DOMContentLoaded", function () {
   );
 })();
 
-/* Espaçamento entre os botões do cartão de telemedicina */
+/* Botões lado a lado no cartão de telemedicina */
 .price-card.featured > a.btn {
-display: table;
-margin-bottom: 14px;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+margin-right: 8px;
+margin-bottom: 0;
+vertical-align: middle;
 }
 
 .price-card.featured > a.btn {
-margin-bottom: 0;
+margin-right: 0;
 }
