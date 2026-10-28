@@ -230,7 +230,9 @@ var message =
   name +
   ' e gostaria de agendar uma consulta na modalidade ' +
   modality +
-  '.';
+  (ORIGIN === 'google_perfil'
+    ? '. Encontrei seu contato pelo Google.'
+    : '.');
 
 var destination = new URL(pendingHref);
 
