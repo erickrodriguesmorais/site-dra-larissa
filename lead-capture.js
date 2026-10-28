@@ -270,7 +270,9 @@ window.location.href = destination.toString();
 
 return (
 text.includes('agendar') ||
-label.includes('agendar')
+label.includes('agendar') ||
+text.includes('consultar') ||
+label.includes('consultar')
 );
   }
 
