@@ -129,16 +129,21 @@ document.addEventListener("DOMContentLoaded", function () {
   );
 })();
 
-/* Botões lado a lado no cartão de telemedicina */
-.price-card.featured > a.btn {
-display: inline-flex !important;
-width: auto !important;
+/* Alinhamento dos botões do cartão de telemedicina */
+.price-card.featured .telemedicina-botoes {
+display: flex !important;
+flex-direction: row !important;
 align-items: center;
-justify-content: center;
-margin: 0 8px 0 0 !important;
-vertical-align: middle;
+justify-content: flex-start;
+flex-wrap: nowrap;
+gap: 10px;
+margin-top: 12px;
 }
 
-.price-card.featured > a.btn {
-margin-right: 0 !important;
+.price-card.featured .telemedicina-botoes > a.btn {
+display: inline-flex !important;
+flex: 0 0 auto !important;
+width: auto !important;
+margin: 0 !important;
+white-space: nowrap;
 }
