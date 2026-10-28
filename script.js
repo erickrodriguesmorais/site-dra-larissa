@@ -128,3 +128,13 @@ document.addEventListener("DOMContentLoaded", function () {
     displayTime + fadeTime
   );
 })();
+
+/* Espaçamento entre os botões do cartão de telemedicina */
+.price-card.featured > a.btn {
+display: table;
+margin-bottom: 10px;
+}
+
+.price-card.featured > a.btn {
+margin-bottom: 0;
+}
