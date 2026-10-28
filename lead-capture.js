@@ -2,11 +2,19 @@
 (function () {
   'use strict';
 
-  var SUPABASE_URL = 'https://bwhvfiklrvrodadbxoly.supabase.co';
-  var SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_R5xKqfJPBmp6PEsiRAvZ1w_IIypXVPZ';
-  var ORIGIN = document.documentElement.getAttribute('data-lead-origin') || 'site_principal';
-  var pendingHref = '';
-  var modal;
+var SUPABASE_URL = 'https://bwhvfiklrvrodadbxoly.supabase.co';
+var SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_R5xKqfJPBmp6PEsiRAvZ1w_IIypXVPZ';
+
+var params = new URLSearchParams(window.location.search);
+var requestedOrigin = params.get('origem');
+var pageOrigin = document.documentElement.getAttribute('data-lead-origin');
+
+var ORIGIN = requestedOrigin === 'google_perfil'
+? 'google_perfil'
+: (pageOrigin || 'site_principal');
+
+var pendingHref = '';
+var modal;
 
   function buildModal() {
     var existingModal = document.getElementById('lead-capture-modal');
