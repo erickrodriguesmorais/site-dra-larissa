@@ -268,12 +268,10 @@ window.location.href = destination.toString();
       link.getAttribute('aria-label') || ''
     ).trim().toLowerCase();
 
-    return (
-      text.includes('agendar consulta') ||
-      label.includes('agendar consulta') ||
-      text.includes('agendar um atendimento') ||
-      text.includes('agendar uma consulta')
-    );
+return (
+text.includes('agendar') ||
+label.includes('agendar')
+);
   }
 
   document.addEventListener('click', function (event) {
