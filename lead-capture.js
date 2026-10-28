@@ -287,6 +287,16 @@ window.location.href = destination.toString();
     openModal(link.href);
   });
 
+    // Abre automaticamente o formulário quando o acesso vier do Google.
+  if (
+    new URLSearchParams(window.location.search)
+      .get('abrir_formulario') === '1'
+  ) {
+    document.addEventListener('DOMContentLoaded', function () {
+      openModal('https://wa.me/5583998023806');
+    });
+  }
+
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && modal && !modal.hidden) {
       closeModal();
