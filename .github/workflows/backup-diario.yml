@@ -149,17 +149,21 @@ jobs:
               "files(id,name,createdTime)",
           )
 
-          for file in old_files:
-              created = datetime.fromisoformat(
-                  file["createdTime"].replace("Z", "+00:00")
-              )
-              if created < cutoff:
-                  check(requests.delete(
-                      f"{BASE}/files/{file['id']}",
-                      headers=headers,
-                      timeout=30,
-                  ))
-                  print(f"Removido backup antigo: {file['name']}")
+for file in old_files:
+    if not file["name"].endswith(".zip"):
+        continue
 
-          print("Backup diário concluído.")
-          PY
+    created = datetime.fromisoformat(
+        file["createdTime"].replace("Z", "+00:00")
+    )
+
+    if created < cutoff:
+        check(requests.delete(
+            f"{BASE}/files/{file['id']}",
+            headers=headers,
+            timeout=30,
+        ))
+        print(f"Removido backup antigo: {file['name']}")
+
+print("Backup diário concluído.")
+PY
