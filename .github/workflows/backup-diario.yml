@@ -21,7 +21,7 @@ jobs:
       - name: Instalar dependência
         run: pip install requests
 
-      - name: Gerar e enviar backups
+      - name: Criar pastas e enviar backups
         env:
           GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
           GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
@@ -43,6 +43,10 @@ jobs:
               "crm-dra-larissa",
           ]
 
+          HEADERS_JSON = {
+              "Content-Type": "application/json; charset=UTF-8"
+          }
+
           def check(response):
               if not response.ok:
                   raise RuntimeError(
@@ -51,8 +55,8 @@ jobs:
                   )
               return response
 
-          # Atualiza o token de acesso do Google Drive.
-          token_response = requests.post(
+          # Renovar o token de acesso do Google Drive.
+          token_response = check(requests.post(
               "https://oauth2.googleapis.com/token",
               data={
                   "client_id": os.environ["GDRIVE_CLIENT_ID"],
@@ -61,16 +65,12 @@ jobs:
                   "grant_type": "refresh_token",
               },
               timeout=30,
-          )
+          ))
 
-          check(token_response)
           access_token = token_response.json()["access_token"]
+          headers = {"Authorization": f"Bearer {access_token}"}
 
-          headers = {
-              "Authorization": f"Bearer {access_token}"
-          }
-
-          def list_files(query, fields):
+          def list_files(query, fields="files(id,name,mimeType,createdTime,parents)"):
               response = check(requests.get(
                   f"{BASE}/files",
                   headers=headers,
@@ -78,23 +78,24 @@ jobs:
                       "q": query,
                       "fields": fields,
                       "pageSize": 1000,
-                      "orderBy": "createdTime",
                   },
                   timeout=30,
               ))
-
               return response.json().get("files", [])
 
-          # Localiza ou cria a pasta BACKUP_GITHUB.
+          def escape_query(value):
+              return value.replace("\\", "\\\\").replace("'", "\\'")
+
+          # Localizar a pasta principal.
           folders = list_files(
-              "name = 'BACKUP_GITHUB' and "
-              "mimeType = 'application/vnd.google-apps.folder' "
+              "name = 'BACKUP_GITHUB' "
+              "and mimeType = 'application/vnd.google-apps.folder' "
               "and trashed = false",
               "files(id,name)",
           )
 
           if folders:
-              folder_id = folders[0]["id"]
+              main_folder_id = folders[0]["id"]
           else:
               response = check(requests.post(
                   f"{BASE}/files",
@@ -108,31 +109,74 @@ jobs:
                   },
                   timeout=30,
               ))
+              main_folder_id = response.json()["id"]
 
-              folder_id = response.json()["id"]
+          # Usar a data de Brasília para nomear a pasta diária.
+          from zoneinfo import ZoneInfo
 
-          now = datetime.now(timezone.utc)
-          stamp = now.strftime("%Y-%m-%d")
-          boundary = "backup_github_boundary"
+          now_local = datetime.now(ZoneInfo("America/Sao_Paulo"))
+          today = now_local.strftime("%Y-%m-%d")
 
-          # Gera e envia um ZIP de cada repositório.
-          for repo in REPOS:
-              print(f"Baixando {repo}...")
+          print(f"Pasta de backup do dia: {today}")
 
-              response = check(requests.get(
-                  f"https://api.github.com/repos/{OWNER}/{repo}/zipball",
+          # Localizar ou criar a pasta do dia.
+          safe_today = escape_query(today)
+
+          daily_folders = list_files(
+              f"name = '{safe_today}' "
+              "and mimeType = 'application/vnd.google-apps.folder' "
+              f"and '{main_folder_id}' in parents "
+              "and trashed = false",
+              "files(id,name)",
+          )
+
+          if daily_folders:
+              daily_folder_id = daily_folders[0]["id"]
+              print(f"Usando pasta existente: {today}")
+          else:
+              response = check(requests.post(
+                  f"{BASE}/files",
                   headers={
-                      "Accept": "application/vnd.github+json"
+                      **headers,
+                      "Content-Type": "application/json",
                   },
+                  json={
+                      "name": today,
+                      "mimeType": "application/vnd.google-apps.folder",
+                      "parents": [main_folder_id],
+                  },
+                  timeout=30,
+              ))
+              daily_folder_id = response.json()["id"]
+              print(f"Pasta criada: {today}")
+
+          # Criar ou substituir o ZIP de cada repositório.
+          for repo in REPOS:
+              print(f"Baixando repositório: {repo}")
+
+              download = check(requests.get(
+                  f"https://api.github.com/repos/{OWNER}/{repo}/zipball",
+                  headers={"Accept": "application/vnd.github+json"},
                   timeout=120,
               ))
 
-              filename = f"{repo}-{stamp}.zip"
+              filename = f"{repo}.zip"
+              safe_filename = escape_query(filename)
 
+              existing = list_files(
+                  f"name = '{safe_filename}' "
+                  f"and '{daily_folder_id}' in parents "
+                  "and trashed = false",
+                  "files(id,name)",
+              )
+
+              boundary = "backup_github_boundary"
               metadata = {
                   "name": filename,
-                  "parents": [folder_id],
-                  "description": f"Backup diário do GitHub: {repo}",
+                  "description": (
+                      f"Backup de {repo} em {today}"
+                  ),
+                  "parents": [daily_folder_id],
               }
 
               body = (
@@ -142,47 +186,107 @@ jobs:
                   f"--{boundary}\r\n"
                   "Content-Type: application/zip\r\n"
                   "Content-Transfer-Encoding: binary\r\n\r\n"
-              ).encode() + response.content + (
+              ).encode("utf-8") + download.content + (
                   f"\r\n--{boundary}--\r\n"
-              ).encode()
+              ).encode("utf-8")
 
-              upload = check(requests.post(
-                  UPLOAD,
-                  headers={
-                      **headers,
-                      "Content-Type": (
-                          f"multipart/related; boundary={boundary}"
-                      ),
-                  },
-                  params={
-                      "uploadType": "multipart",
-                      "fields": "id,name",
-                  },
-                  data=body,
-                  timeout=180,
-              ))
+              if existing:
+                  file_id = existing[0]["id"]
 
-              print(
-                  f"Backup enviado: {upload.json()['name']}"
-              )
+                  upload = check(requests.patch(
+                      f"{UPLOAD}/{file_id}",
+                      headers={
+                          **headers,
+                          "Content-Type": (
+                              f"multipart/related; boundary={boundary}"
+                          ),
+                      },
+                      params={
+                          "uploadType": "multipart",
+                          "fields": "id,name",
+                      },
+                      data=body,
+                      timeout=180,
+                  ))
 
-          # Remove apenas ZIPs com mais de 30 dias.
-          print("Limpando backups com mais de 30 dias...")
+                  print(f"Backup atualizado: {upload.json()['name']}")
 
-          cutoff = now - timedelta(days=30)
+                  # Remover eventuais duplicatas com o mesmo nome.
+                  for duplicate in existing[1:]:
+                      check(requests.delete(
+                          f"{BASE}/files/{duplicate['id']}",
+                          headers=headers,
+                          timeout=30,
+                      ))
+                      print(f"Duplicata removida: {duplicate['name']}")
 
-          old_files = list_files(
-              f"'{folder_id}' in parents and trashed = false",
-              "files(id,name,createdTime)",
+              else:
+                  upload = check(requests.post(
+                      UPLOAD,
+                      headers={
+                          **headers,
+                          "Content-Type": (
+                              f"multipart/related; boundary={boundary}"
+                          ),
+                      },
+                      params={
+                          "uploadType": "multipart",
+                          "fields": "id,name",
+                      },
+                      data=body,
+                      timeout=180,
+                  ))
+
+                  print(f"Backup enviado: {upload.json()['name']}")
+
+          # Excluir pastas diárias com mais de 30 dias.
+          print("Verificando pastas antigas...")
+
+          cutoff = now_local.date() - timedelta(days=30)
+
+          all_folders = list_files(
+              f"'{main_folder_id}' in parents "
+              "and mimeType = 'application/vnd.google-apps.folder' "
+              "and trashed = false",
+              "files(id,name,mimeType)",
           )
 
-          for file in old_files:
+          for folder in all_folders:
+              try:
+                  folder_date = datetime.strptime(
+                      folder["name"], "%Y-%m-%d"
+                  ).date()
+              except ValueError:
+                  # Não mexer em pastas que não usam o padrão de data.
+                  continue
+
+              if folder_date < cutoff:
+                  check(requests.delete(
+                      f"{BASE}/files/{folder['id']}",
+                      headers=headers,
+                      params={"supportsAllDrives": "true"},
+                      timeout=30,
+                  ))
+                  print(f"Pasta antiga removida: {folder['name']}")
+
+          # Limpar ZIPs antigos que ficaram diretamente na pasta principal
+          # durante os testes anteriores.
+          root_zips = list_files(
+              f"'{main_folder_id}' in parents "
+              "and trashed = false",
+              "files(id,name,createdTime,mimeType)",
+          )
+
+          for file in root_zips:
               if not file["name"].endswith(".zip"):
                   continue
 
-              created = datetime.fromisoformat(
-                  file["createdTime"].replace("Z", "+00:00")
-              )
+              try:
+                  created = datetime.fromisoformat(
+                      file["createdTime"].replace("Z", "+00:00")
+                  ).date()
+              except (KeyError, ValueError):
+                  continue
 
               if created < cutoff:
                   check(requests.delete(
@@ -190,10 +294,7 @@ jobs:
                       headers=headers,
                       timeout=30,
                   ))
+                  print(f"ZIP antigo removido: {file['name']}")
 
-                  print(
-                      f"Removido backup antigo: {file['name']}"
-                  )
-
-          print("Backup diário concluído.")
+          print("Backup diário concluído com sucesso.")
           PY
