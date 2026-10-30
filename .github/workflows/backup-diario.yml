@@ -115,7 +115,7 @@ jobs:
           from zoneinfo import ZoneInfo
 
           now_local = datetime.now(ZoneInfo("America/Sao_Paulo"))
-          today = now_local.strftime("%Y-%m-%d")
+          today = now_local.strftime("%d-%m-%Y")
 
           print(f"Pasta de backup do dia: {today}")
 
@@ -254,7 +254,7 @@ jobs:
           for folder in all_folders:
               try:
                   folder_date = datetime.strptime(
-                      folder["name"], "%Y-%m-%d"
+                      folder["name"], "%d-%m-%Y"
                   ).date()
               except ValueError:
                   # Não mexer em pastas que não usam o padrão de data.
