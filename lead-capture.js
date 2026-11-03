@@ -5,13 +5,82 @@
 var SUPABASE_URL = 'https://bwhvfiklrvrodadbxoly.supabase.co';
 var SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_R5xKqfJPBmp6PEsiRAvZ1w_IIypXVPZ';
 
+// Identificação e preservação da origem do visitante
 var params = new URLSearchParams(window.location.search);
+
 var requestedOrigin = params.get('origem');
 var pageOrigin = document.documentElement.getAttribute('data-lead-origin');
 
-var ORIGIN = requestedOrigin === 'google_perfil'
-? 'google_perfil'
-: (pageOrigin || 'site_principal');
+var STORAGE_KEY = 'lead_primeira_origem';
+
+function identificarOrigem() {
+  // 1. Parâmetro explícito na URL tem prioridade
+  if (requestedOrigin) {
+    return requestedOrigin;
+  }
+
+  // 2. Origem definida diretamente na página
+  if (pageOrigin) {
+    return pageOrigin;
+  }
+
+  // 3. Preserva a primeira origem já identificada
+  try {
+    var origemSalva = localStorage.getItem(STORAGE_KEY);
+
+    if (origemSalva) {
+      return origemSalva;
+    }
+  } catch (error) {}
+
+  // 4. Identifica a referência de acesso
+  var referrer = document.referrer;
+
+  if (referrer) {
+    try {
+      var hostname = new URL(referrer).hostname.toLowerCase();
+
+      if (
+        hostname === 'google.com' ||
+        hostname.endsWith('.google.com') ||
+        hostname === 'google.com.br' ||
+        hostname.endsWith('.google.com.br')
+      ) {
+        return 'google_organico';
+      }
+
+      if (
+        hostname === 'instagram.com' ||
+        hostname.endsWith('.instagram.com')
+      ) {
+        return 'instagram';
+      }
+
+      if (
+        hostname === 'facebook.com' ||
+        hostname.endsWith('.facebook.com') ||
+        hostname === 'fb.com' ||
+        hostname.endsWith('.fb.com')
+      ) {
+        return 'facebook';
+      }
+
+      return 'outros_referencia';
+
+    } catch (error) {}
+  }
+
+  return 'acesso_direto';
+}
+
+var ORIGIN = identificarOrigem();
+
+// Salva a primeira origem identificada para preservar durante a navegação
+try {
+  if (!localStorage.getItem(STORAGE_KEY)) {
+    localStorage.setItem(STORAGE_KEY, ORIGIN);
+  }
+} catch (error) {}
 
 var pendingHref = '';
 var modal;
