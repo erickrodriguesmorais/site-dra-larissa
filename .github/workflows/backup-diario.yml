@@ -1,3 +1,4 @@
+
 name: Backup diário para Google Drive
 
 on:
@@ -52,7 +53,7 @@ jobs:
                   )
               return response
 
-          # Renovar o token de acesso do Google Drive.
+          # Renovar o token do Google Drive.
           token_response = check(requests.post(
               "https://oauth2.googleapis.com/token",
               data={
@@ -67,7 +68,7 @@ jobs:
           access_token = token_response.json()["access_token"]
           headers = {"Authorization": f"Bearer {access_token}"}
 
-          # Função para listar arquivos no Google Drive.
+          # Listar arquivos no Google Drive.
           def list_files(query, fields="files(id,name,mimeType,createdTime,parents)"):
               response = check(requests.get(
                   f"{BASE}/files",
@@ -84,7 +85,7 @@ jobs:
           def escape_query(value):
               return value.replace("\\", "\\\\").replace("'", "\\'")
 
-          # Localizar a pasta principal.
+          # Localizar ou criar a pasta principal.
           folders = list_files(
               "name = 'BACKUP_GITHUB' "
               "and mimeType = 'application/vnd.google-apps.folder' "
@@ -112,13 +113,13 @@ jobs:
               main_folder_id = response.json()["id"]
               print("Pasta principal criada.")
 
-          # Usar a data de Brasília para nomear a pasta diária.
+          # Data de Brasília.
           now_local = datetime.now(ZoneInfo("America/Sao_Paulo"))
           today = now_local.strftime("%d-%m-%Y")
 
           print(f"Pasta de backup do dia: {today}")
 
-          # Localizar ou criar a pasta do dia.
+          # Localizar ou criar a pasta diária.
           safe_today = escape_query(today)
 
           daily_folders = list_files(
@@ -150,7 +151,7 @@ jobs:
               daily_folder_id = response.json()["id"]
               print(f"Pasta criada: {today}")
 
-          # Criar ou substituir o ZIP de cada repositório.
+          # Backup dos três repositórios.
           for repo in REPOS:
               print(f"Baixando repositório: {repo}")
 
@@ -172,13 +173,15 @@ jobs:
 
               boundary = "backup_github_boundary"
 
-metadata = {
-    "name": filename,
-    "description": f"Backup de {repo} em {today}",
-}
+              # Não enviar parents durante atualizações.
+              metadata = {
+                  "name": filename,
+                  "description": f"Backup de {repo} em {today}",
+              }
 
-if not existing:
-    metadata["parents"] = [daily_folder_id]
+              # Definir a pasta somente para arquivos novos.
+              if not existing:
+                  metadata["parents"] = [daily_folder_id]
 
               body = (
                   f"--{boundary}\r\n"
@@ -212,7 +215,7 @@ if not existing:
 
                   print(f"Backup atualizado: {upload.json()['name']}")
 
-                  # Remover eventuais duplicatas com o mesmo nome.
+                  # Remover duplicatas.
                   for duplicate in existing[1:]:
                       check(requests.delete(
                           f"{BASE}/files/{duplicate['id']}",
@@ -242,7 +245,7 @@ if not existing:
                   print(f"Backup enviado: {upload.json()['name']}")
 
           # ==========================================
-          # RETENÇÃO: MANTER SOMENTE OS 10 MAIS RECENTES
+          # RETENÇÃO DOS 10 BACKUPS MAIS RECENTES
           # ==========================================
 
           print("Verificando os últimos 10 backups...")
@@ -265,7 +268,7 @@ if not existing:
 
               except ValueError:
                   try:
-                      # Compatibilidade com pastas antigas: AAAA-MM-DD
+                      # Formato antigo: AAAA-MM-DD
                       folder_date = datetime.strptime(
                           folder["name"], "%Y-%m-%d"
                       ).date()
@@ -279,24 +282,23 @@ if not existing:
                   "date": folder_date,
               })
 
-          # Ordenar da data mais recente para a mais antiga.
+          # Ordenar do mais recente para o mais antigo.
           backup_folders.sort(
               key=lambda x: x["date"],
               reverse=True
           )
 
-          # Manter somente os 10 backups mais recentes.
+          # Selecionar somente os excedentes.
           folders_to_delete = backup_folders[10:]
 
           print(f"Total de backups encontrados: {len(backup_folders)}")
           print(f"Backups que serão mantidos: {min(len(backup_folders), 10)}")
 
-          # Excluir os backups excedentes.
+          # Excluir backups excedentes.
           for folder in folders_to_delete:
-
               print(f"Excluindo backup antigo: {folder['name']}")
 
-              # Primeiro excluir os arquivos dentro da pasta.
+              # Excluir arquivos dentro da pasta.
               contents = list_files(
                   f"'{folder['id']}' in parents and trashed = false",
                   "files(id,name)",
@@ -311,7 +313,7 @@ if not existing:
 
                   print(f"Arquivo removido: {item['name']}")
 
-              # Depois excluir a pasta vazia.
+              # Excluir a pasta vazia.
               check(requests.delete(
                   f"{BASE}/files/{folder['id']}",
                   headers=headers,
