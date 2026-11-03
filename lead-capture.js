@@ -19,10 +19,6 @@ function identificarOrigem() {
     return requestedOrigin;
   }
 
-  // 2. Origem definida diretamente na página
-  if (pageOrigin) {
-    return pageOrigin;
-  }
 
 // 3. Preserva a origem salva somente quando não houver
 // uma nova referência externa identificada
@@ -71,7 +67,11 @@ try {
 } catch (error) {}
 
 
-  return 'acesso_direto';
+if (pageOrigin) {
+  return pageOrigin;
+}
+
+return 'acesso_direto';
 }
 
 var ORIGIN = identificarOrigem();
