@@ -172,11 +172,13 @@ jobs:
 
               boundary = "backup_github_boundary"
 
-              metadata = {
-                  "name": filename,
-                  "description": f"Backup de {repo} em {today}",
-                  "parents": [daily_folder_id],
-              }
+metadata = {
+    "name": filename,
+    "description": f"Backup de {repo} em {today}",
+}
+
+if not existing:
+    metadata["parents"] = [daily_folder_id]
 
               body = (
                   f"--{boundary}\r\n"
