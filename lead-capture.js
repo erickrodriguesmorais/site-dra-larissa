@@ -70,42 +70,6 @@ try {
   }
 } catch (error) {}
 
-  // 4. Identifica a referência de acesso
-  var referrer = document.referrer;
-
-  if (referrer) {
-    try {
-      var hostname = new URL(referrer).hostname.toLowerCase();
-
-      if (
-        hostname === 'google.com' ||
-        hostname.endsWith('.google.com') ||
-        hostname === 'google.com.br' ||
-        hostname.endsWith('.google.com.br')
-      ) {
-        return 'google_organico';
-      }
-
-      if (
-        hostname === 'instagram.com' ||
-        hostname.endsWith('.instagram.com')
-      ) {
-        return 'instagram';
-      }
-
-      if (
-        hostname === 'facebook.com' ||
-        hostname.endsWith('.facebook.com') ||
-        hostname === 'fb.com' ||
-        hostname.endsWith('.fb.com')
-      ) {
-        return 'facebook';
-      }
-
-      return 'outros_referencia';
-
-    } catch (error) {}
-  }
 
   return 'acesso_direto';
 }
