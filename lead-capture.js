@@ -24,14 +24,51 @@ function identificarOrigem() {
     return pageOrigin;
   }
 
-  // 3. Preserva a primeira origem já identificada
-  try {
-    var origemSalva = localStorage.getItem(STORAGE_KEY);
+// 3. Preserva a origem salva somente quando não houver
+// uma nova referência externa identificada
+var referrer = document.referrer;
 
-    if (origemSalva) {
-      return origemSalva;
+if (referrer) {
+  try {
+    var hostname = new URL(referrer).hostname.toLowerCase();
+
+    if (
+      hostname === 'google.com' ||
+      hostname.endsWith('.google.com') ||
+      hostname === 'google.com.br' ||
+      hostname.endsWith('.google.com.br')
+    ) {
+      return 'google_organico';
     }
+
+    if (
+      hostname === 'instagram.com' ||
+      hostname.endsWith('.instagram.com')
+    ) {
+      return 'instagram';
+    }
+
+    if (
+      hostname === 'facebook.com' ||
+      hostname.endsWith('.facebook.com') ||
+      hostname === 'fb.com' ||
+      hostname.endsWith('.fb.com')
+    ) {
+      return 'facebook';
+    }
+
+    return 'outros_referencia';
+
   } catch (error) {}
+}
+
+try {
+  var origemSalva = localStorage.getItem(STORAGE_KEY);
+
+  if (origemSalva) {
+    return origemSalva;
+  }
+} catch (error) {}
 
   // 4. Identifica a referência de acesso
   var referrer = document.referrer;
