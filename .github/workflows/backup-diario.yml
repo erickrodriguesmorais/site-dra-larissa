@@ -31,7 +31,8 @@ jobs:
           import os
           import json
           import requests
-          from datetime import datetime, timedelta, timezone
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
 
           BASE = "https://www.googleapis.com/drive/v3"
           UPLOAD = "https://www.googleapis.com/upload/drive/v3/files"
@@ -42,10 +43,6 @@ jobs:
               "links-dra-larissa",
               "crm-dra-larissa",
           ]
-
-          HEADERS_JSON = {
-              "Content-Type": "application/json; charset=UTF-8"
-          }
 
           def check(response):
               if not response.ok:
@@ -70,6 +67,7 @@ jobs:
           access_token = token_response.json()["access_token"]
           headers = {"Authorization": f"Bearer {access_token}"}
 
+          # Função para listar arquivos no Google Drive.
           def list_files(query, fields="files(id,name,mimeType,createdTime,parents)"):
               response = check(requests.get(
                   f"{BASE}/files",
@@ -96,6 +94,7 @@ jobs:
 
           if folders:
               main_folder_id = folders[0]["id"]
+              print("Pasta principal encontrada.")
           else:
               response = check(requests.post(
                   f"{BASE}/files",
@@ -109,11 +108,11 @@ jobs:
                   },
                   timeout=30,
               ))
+
               main_folder_id = response.json()["id"]
+              print("Pasta principal criada.")
 
           # Usar a data de Brasília para nomear a pasta diária.
-          from zoneinfo import ZoneInfo
-
           now_local = datetime.now(ZoneInfo("America/Sao_Paulo"))
           today = now_local.strftime("%d-%m-%Y")
 
@@ -147,6 +146,7 @@ jobs:
                   },
                   timeout=30,
               ))
+
               daily_folder_id = response.json()["id"]
               print(f"Pasta criada: {today}")
 
@@ -171,11 +171,10 @@ jobs:
               )
 
               boundary = "backup_github_boundary"
+
               metadata = {
                   "name": filename,
-                  "description": (
-                      f"Backup de {repo} em {today}"
-                  ),
+                  "description": f"Backup de {repo} em {today}",
                   "parents": [daily_folder_id],
               }
 
@@ -218,6 +217,7 @@ jobs:
                           headers=headers,
                           timeout=30,
                       ))
+
                       print(f"Duplicata removida: {duplicate['name']}")
 
               else:
@@ -239,10 +239,11 @@ jobs:
 
                   print(f"Backup enviado: {upload.json()['name']}")
 
-          # Excluir pastas diárias com mais de 30 dias.
-          print("Verificando pastas antigas...")
+          # ==========================================
+          # RETENÇÃO: MANTER SOMENTE OS 10 MAIS RECENTES
+          # ==========================================
 
-          cutoff = now_local.date() - timedelta(days=30)
+          print("Verificando os últimos 10 backups...")
 
           all_folders = list_files(
               f"'{main_folder_id}' in parents "
@@ -251,50 +252,72 @@ jobs:
               "files(id,name,mimeType)",
           )
 
+          backup_folders = []
+
           for folder in all_folders:
               try:
+                  # Formato atual: DD-MM-AAAA
                   folder_date = datetime.strptime(
                       folder["name"], "%d-%m-%Y"
                   ).date()
+
               except ValueError:
-                  # Não mexer em pastas que não usam o padrão de data.
-                  continue
+                  try:
+                      # Compatibilidade com pastas antigas: AAAA-MM-DD
+                      folder_date = datetime.strptime(
+                          folder["name"], "%Y-%m-%d"
+                      ).date()
 
-              if folder_date < cutoff:
-                  check(requests.delete(
-                      f"{BASE}/files/{folder['id']}",
-                      headers=headers,
-                      params={"supportsAllDrives": "true"},
-                      timeout=30,
-                  ))
-                  print(f"Pasta antiga removida: {folder['name']}")
+                  except ValueError:
+                      continue
 
-          # Limpar ZIPs antigos que ficaram diretamente na pasta principal
-          # durante os testes anteriores.
-          root_zips = list_files(
-              f"'{main_folder_id}' in parents "
-              "and trashed = false",
-              "files(id,name,createdTime,mimeType)",
+              backup_folders.append({
+                  "id": folder["id"],
+                  "name": folder["name"],
+                  "date": folder_date,
+              })
+
+          # Ordenar da data mais recente para a mais antiga.
+          backup_folders.sort(
+              key=lambda x: x["date"],
+              reverse=True
           )
 
-          for file in root_zips:
-              if not file["name"].endswith(".zip"):
-                  continue
+          # Manter somente os 10 backups mais recentes.
+          folders_to_delete = backup_folders[10:]
 
-              try:
-                  created = datetime.fromisoformat(
-                      file["createdTime"].replace("Z", "+00:00")
-                  ).date()
-              except (KeyError, ValueError):
-                  continue
+          print(f"Total de backups encontrados: {len(backup_folders)}")
+          print(f"Backups que serão mantidos: {min(len(backup_folders), 10)}")
 
-              if created < cutoff:
+          # Excluir os backups excedentes.
+          for folder in folders_to_delete:
+
+              print(f"Excluindo backup antigo: {folder['name']}")
+
+              # Primeiro excluir os arquivos dentro da pasta.
+              contents = list_files(
+                  f"'{folder['id']}' in parents and trashed = false",
+                  "files(id,name)",
+              )
+
+              for item in contents:
                   check(requests.delete(
-                      f"{BASE}/files/{file['id']}",
+                      f"{BASE}/files/{item['id']}",
                       headers=headers,
                       timeout=30,
                   ))
-                  print(f"ZIP antigo removido: {file['name']}")
 
+                  print(f"Arquivo removido: {item['name']}")
+
+              # Depois excluir a pasta vazia.
+              check(requests.delete(
+                  f"{BASE}/files/{folder['id']}",
+                  headers=headers,
+                  timeout=30,
+              ))
+
+              print(f"Pasta removida: {folder['name']}")
+
+          print("Limpeza concluída.")
           print("Backup diário concluído com sucesso.")
           PY
