@@ -1,0 +1,317 @@
+
+name: Backup diário do Supabase para Google Drive
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependência
+        run: pip install requests
+
+      - name: Exportar banco Supabase
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          docker run --rm \
+            -e SUPABASE_DB_URL \
+            -v "$PWD:/backup" \
+            postgres:17 \
+            sh -c 'pg_dump "$SUPABASE_DB_URL" \
+              --format=custom \
+              --no-owner \
+              --file=/backup/backup_supabase.dump'
+
+          test -s backup_supabase.dump
+
+          echo "Backup do banco criado com sucesso."
+          ls -lh backup_supabase.dump
+
+      - name: Enviar backup para Google Drive
+        env:
+          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
+        run: |
+          python - <<'PY'
+          import os
+          import json
+          import requests
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+
+          BASE = "https://www.googleapis.com/drive/v3"
+          UPLOAD = "https://www.googleapis.com/upload/drive/v3/files"
+
+          def check(response):
+              if not response.ok:
+                  raise RuntimeError(
+                      f"Erro HTTP {response.status_code}: "
+                      f"{response.text[:1000]}"
+                  )
+              return response
+
+          # Autenticar no Google Drive.
+          token_response = check(requests.post(
+              "https://oauth2.googleapis.com/token",
+              data={
+                  "client_id": os.environ["GDRIVE_CLIENT_ID"],
+                  "client_secret": os.environ["GDRIVE_CLIENT_SECRET"],
+                  "refresh_token": os.environ["GDRIVE_REFRESH_TOKEN"],
+                  "grant_type": "refresh_token",
+              },
+              timeout=30,
+          ))
+
+          access_token = token_response.json()["access_token"]
+          headers = {"Authorization": f"Bearer {access_token}"}
+
+          def list_files(query, fields="files(id,name,mimeType)"):
+              response = check(requests.get(
+                  f"{BASE}/files",
+                  headers=headers,
+                  params={
+                      "q": query,
+                      "fields": fields,
+                      "pageSize": 1000,
+                  },
+                  timeout=30,
+              ))
+              return response.json().get("files", [])
+
+          def create_folder(name, parent_id=None):
+              metadata = {
+                  "name": name,
+                  "mimeType": "application/vnd.google-apps.folder",
+              }
+
+              if parent_id:
+                  metadata["parents"] = [parent_id]
+
+              response = check(requests.post(
+                  f"{BASE}/files",
+                  headers={
+                      **headers,
+                      "Content-Type": "application/json",
+                  },
+                  json=metadata,
+                  timeout=30,
+              ))
+
+              return response.json()["id"]
+
+          # Localizar a pasta principal.
+          main_folders = list_files(
+              "name = 'BACKUP_GITHUB' "
+              "and mimeType = 'application/vnd.google-apps.folder' "
+              "and trashed = false"
+          )
+
+          if main_folders:
+              main_id = main_folders[0]["id"]
+          else:
+              main_id = create_folder("BACKUP_GITHUB")
+
+          # Localizar ou criar a pasta SUPABASE.
+          supabase_folders = list_files(
+              "name = 'SUPABASE' "
+              "and mimeType = 'application/vnd.google-apps.folder' "
+              f"and '{main_id}' in parents "
+              "and trashed = false"
+          )
+
+          if supabase_folders:
+              supabase_id = supabase_folders[0]["id"]
+          else:
+              supabase_id = create_folder("SUPABASE", main_id)
+
+          # Data de Brasília.
+          now = datetime.now(ZoneInfo("America/Sao_Paulo"))
+          today = now.strftime("%d-%m-%Y")
+
+          print(f"Data do backup: {today}")
+
+          # Localizar ou criar a pasta diária.
+          daily_folders = list_files(
+              f"name = '{today}' "
+              "and mimeType = 'application/vnd.google-apps.folder' "
+              f"and '{supabase_id}' in parents "
+              "and trashed = false"
+          )
+
+          if daily_folders:
+              daily_id = daily_folders[0]["id"]
+              print("Pasta diária existente.")
+          else:
+              daily_id = create_folder(today, supabase_id)
+              print("Pasta diária criada.")
+
+          # Preparar arquivo de backup.
+          filename = "backup_supabase.dump"
+
+          existing = list_files(
+              f"name = '{filename}' "
+              f"and '{daily_id}' in parents "
+              "and trashed = false"
+          )
+
+          boundary = "supabase_backup_boundary"
+
+          metadata = {
+              "name": filename,
+              "description": f"Backup Supabase em {today}",
+          }
+
+          # Definir a pasta apenas para arquivos novos.
+          if not existing:
+              metadata["parents"] = [daily_id]
+
+          with open("backup_supabase.dump", "rb") as file:
+              dump_content = file.read()
+
+          body = (
+              f"--{boundary}\r\n"
+              "Content-Type: application/json; charset=UTF-8\r\n\r\n"
+              f"{json.dumps(metadata)}\r\n"
+              f"--{boundary}\r\n"
+              "Content-Type: application/octet-stream\r\n"
+              "Content-Transfer-Encoding: binary\r\n\r\n"
+          ).encode("utf-8") + dump_content + (
+              f"\r\n--{boundary}--\r\n"
+          ).encode("utf-8")
+
+          # Atualizar ou criar o arquivo.
+          if existing:
+              file_id = existing[0]["id"]
+
+              response = check(requests.patch(
+                  f"{UPLOAD}/{file_id}",
+                  headers={
+                      **headers,
+                      "Content-Type": (
+                          f"multipart/related; boundary={boundary}"
+                      ),
+                  },
+                  params={
+                      "uploadType": "multipart",
+                      "fields": "id,name",
+                  },
+                  data=body,
+                  timeout=600,
+              ))
+
+              print("Backup existente atualizado.")
+
+              # Remover duplicatas.
+              for duplicate in existing[1:]:
+                  check(requests.delete(
+                      f"{BASE}/files/{duplicate['id']}",
+                      headers=headers,
+                      timeout=30,
+                  ))
+
+          else:
+              response = check(requests.post(
+                  UPLOAD,
+                  headers={
+                      **headers,
+                      "Content-Type": (
+                          f"multipart/related; boundary={boundary}"
+                      ),
+                  },
+                  params={
+                      "uploadType": "multipart",
+                      "fields": "id,name",
+                  },
+                  data=body,
+                  timeout=600,
+              ))
+
+              print("Novo backup enviado.")
+
+          print(f"Arquivo salvo: {filename}")
+          print(f"Tamanho: {len(dump_content)} bytes")
+
+          # ==========================================
+          # RETENÇÃO DOS 10 BACKUPS MAIS RECENTES
+          # ==========================================
+
+          print("Verificando os últimos 10 backups...")
+
+          all_folders = list_files(
+              f"'{supabase_id}' in parents "
+              "and mimeType = 'application/vnd.google-apps.folder' "
+              "and trashed = false"
+          )
+
+          backup_folders = []
+
+          for folder in all_folders:
+              try:
+                  folder_date = datetime.strptime(
+                      folder["name"], "%d-%m-%Y"
+                  ).date()
+              except ValueError:
+                  try:
+                      folder_date = datetime.strptime(
+                          folder["name"], "%Y-%m-%d"
+                      ).date()
+                  except ValueError:
+                      continue
+
+              backup_folders.append({
+                  "id": folder["id"],
+                  "name": folder["name"],
+                  "date": folder_date,
+              })
+
+          backup_folders.sort(
+              key=lambda item: item["date"],
+              reverse=True
+          )
+
+          folders_to_delete = backup_folders[10:]
+
+          print(f"Total encontrado: {len(backup_folders)}")
+          print(f"Backups mantidos: {min(len(backup_folders), 10)}")
+
+          for folder in folders_to_delete:
+              print(f"Excluindo backup antigo: {folder['name']}")
+
+              contents = list_files(
+                  f"'{folder['id']}' in parents and trashed = false"
+              )
+
+              for item in contents:
+                  check(requests.delete(
+                      f"{BASE}/files/{item['id']}",
+                      headers=headers,
+                      timeout=30,
+                  ))
+
+                  print(f"Arquivo removido: {item['name']}")
+
+              check(requests.delete(
+                  f"{BASE}/files/{folder['id']}",
+                  headers=headers,
+                  timeout=30,
+              ))
+
+              print(f"Pasta removida: {folder['name']}")
+
+          print("Limpeza concluída.")
+          print("Backup Supabase concluído com sucesso.")
+          PY
